@@ -396,6 +396,11 @@ function updateVoteCards() {
   });
 }
 
+function updateVoteRemaining() {
+  const voted = state.playerVoted.filter(Boolean).length;
+  document.getElementById("votes-remaining").textContent = `${voted} of ${state.players.length} voted`;
+}
+
 function castVote(targetIndex) {
   if (state.currentVoterIndex >= state.players.length) return;
   state.votes[targetIndex] = (state.votes[targetIndex] || 0) + 1;
@@ -403,6 +408,7 @@ function castVote(targetIndex) {
   playSound("vote");
   if (state.settings.vibration && navigator.vibrate) navigator.vibrate(20);
   updateVoteCards();
+  updateVoteRemaining();
   // Find next non-voted player
   do {
     state.currentVoterIndex += 1;
