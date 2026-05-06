@@ -8,10 +8,15 @@ const translations = {
     votingRoundsSub: "Votes before result shows",
     showCategoryHint: "Show Category Hint",
     showCategoryHintSub: "Impostors see word category",
-    vibration: "Vibration",
-    vibrationSub: "Haptic feedback on reveal",
+    categoryFilter: "Category Filter",
+    categoryFilterSub: "Choose which word category to use",
+    customWordPack: "Custom Word Pack",
+    customWordPackSub: "Add custom word - hint entries, one per line",
     sound: "Sound Effects",
     soundSub: "Play reveal, vote, and result audio",
+    soundTest: "Test",
+    soundDisabled: "Sound is muted. Turn it on to test.",
+    wordPackEmpty: "No custom words loaded. Add entries above.",
     theme: "Theme",
     themeSub: "Light / dark mode",
     accent: "Accent",
@@ -26,6 +31,9 @@ const translations = {
     mode_spy: "Spy Mode",
     mode_quick: "Quick Round",
     mode_noguess: "No Guess",
+    guessWordPrompt: "Guess the word:",
+    impostorGuessedCorrect: "Impostor guessed the word correctly!",
+    wrongGuessCrewWins: "Wrong guess! Crewmates win!",
     // Add more as needed
   },
   es: {
@@ -37,10 +45,15 @@ const translations = {
     votingRoundsSub: "Votos antes de mostrar resultado",
     showCategoryHint: "Mostrar Pista de Categoría",
     showCategoryHintSub: "Los impostores ven la categoría de la palabra",
-    vibration: "Vibración",
-    vibrationSub: "Retroalimentación háptica al revelar",
+    categoryFilter: "Filtro de Categoría",
+    categoryFilterSub: "Elige qué categoría de palabra usar",
+    customWordPack: "Paquete de Palabras Personalizado",
+    customWordPackSub: "Agrega entradas palabra - pista, una por línea",
     sound: "Efectos de Sonido",
     soundSub: "Reproducir audio de revelar, votar y resultado",
+    soundTest: "Probar",
+    soundDisabled: "El sonido está silenciado. Actívalo para probar.",
+    wordPackEmpty: "No hay palabras personalizadas cargadas. Agrega entradas arriba.",
     theme: "Tema",
     themeSub: "Modo claro / oscuro",
     accent: "Acento",
@@ -55,6 +68,45 @@ const translations = {
     mode_spy: "Modo Espía",
     mode_quick: "Ronda Rápida",
     mode_noguess: "Sin Adivinar",
+    guessWordPrompt: "Adivina la palabra:",
+    impostorGuessedCorrect: "¡El impostor adivinó la palabra correctamente!",
+    wrongGuessCrewWins: "¡Adivinanza incorrecta! ¡Los tripulantes ganan!",
+  },
+  el: {
+    title: "Impostor — Party Game",
+    settingsTitle: "Ρυθμίσεις",
+    discussionTimer: "Χρονόμετρο Συζήτησης",
+    discussionTimerSub: "Λεπτά για τη φάση συζήτησης",
+    votingRounds: "Γύροι Ψηφοφορίας",
+    votingRoundsSub: "Ψήφοι πριν εμφανιστεί το αποτέλεσμα",
+    showCategoryHint: "Εμφάνιση Υπόδειξης Κατηγορίας",
+    showCategoryHintSub: "Οι απατεώνες βλέπουν την κατηγορία του λόγου",
+    categoryFilter: "Φίλτρο Κατηγορίας",
+    categoryFilterSub: "Επίλεξε ποια κατηγορία λέξης θα χρησιμοποιηθεί",
+    customWordPack: "Προσαρμοσμένο Πακέτο Λέξεων",
+    customWordPackSub: "Πρόσθεσε λέξη - ένδειξη, μία ανά γραμμή",
+    sound: "Ηχητικά Εφέ",
+    soundSub: "Αναπαραγωγή ήχου αποκάλυψης, ψηφοφορίας και αποτελέσματος",
+    soundTest: "Δοκίμασε",
+    soundDisabled: "Ο ήχος είναι στην σίγαση. Ενεργοποίησέ τον για δοκιμή.",
+    wordPackEmpty: "Δεν έχει φορτωθεί κανένα προσαρμοσμένο λέξη. Πρόσθεσε καταχωρήσεις παραπάνω.",
+    theme: "Θέμα",
+    themeSub: "Ανοιχτή / σκοτεινή λειτουργία",
+    accent: "Έμφαση",
+    accentSub: "Κυκλοφορία του χρώματος επισήμανσης",
+    language: "Γλώσσα",
+    enterPlayerName: "Εισάγετε ένα όνομα παίκτη πριν προσθέσετε.",
+    maxPlayers: "Μέγιστο 12 παίκτες επιτρέπονται.",
+    duplicatePlayer: "Αυτό το όνομα παίκτη έχει ήδη προστεθεί.",
+    mode_classic: "Κλασικό",
+    mode_double: "Διπλός Κατάσκοπος",
+    mode_nohint: "Χωρίς Υπόδειξη",
+    mode_spy: "Λειτουργία Κατάσκοπου",
+    mode_quick: "Γρήγορη Γύρα",
+    mode_noguess: "Χωρίς Εικασία",
+    guessWordPrompt: "Μάντεψε τη λέξη:",
+    impostorGuessedCorrect: "Ο απατεώνας μάντεψε σωστά τη λέξη!",
+    wrongGuessCrewWins: "Λάθος μαντεψιά! Το πλήρωμα κερδίζει!",
   }
 };
 
@@ -354,6 +406,7 @@ const ACCENTS = [
 ];
 
 let audioContext = null;
+let customWordEntries = [];
 
 const state = {
   players: [],
@@ -370,16 +423,21 @@ const state = {
   scores: {},
   settings: {
     timerMins: 2,
-    votingRounds: 2,
+    votingRounds: 1,
     showHint: true,
     vibration: true,
     theme: "dark",
     accentIndex: 0,
     sound: true,
     language: 'en',
+    categoryFilter: 'All',
+    useCustomWords: false,
+    customWordpackText: '',
   },
   timerInterval: null,
   timerRemaining: 120,
+  extraDiscussion: false,
+  isRevote: false,
 };
 
 function ensureAudio() {
@@ -413,11 +471,106 @@ function playSound(type) {
   osc.stop(now + preset.duration + 0.02);
 }
 
+function persistSettings() {
+  localStorage.setItem('impostor-settings', JSON.stringify(state.settings));
+}
+
+function parseCustomWordPack(text) {
+  return text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [wordPart, hintPart] = line.split('-').map((part) => part.trim());
+      if (!wordPart || !hintPart) return null;
+      return { word: wordPart, hint: hintPart };
+    })
+    .filter(Boolean);
+}
+
+function getFilteredWordPool() {
+  let pool = [...WORDS];
+  if (state.settings.useCustomWords && customWordEntries.length) {
+    pool = [...pool, ...customWordEntries];
+  }
+  if (state.settings.categoryFilter && state.settings.categoryFilter !== 'All') {
+    pool = pool.filter((entry) => entry.hint === state.settings.categoryFilter);
+  }
+  return pool.length ? pool : WORDS;
+}
+
+function getRandomWord() {
+  const pool = getFilteredWordPool();
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function renderCategoryOptions() {
+  const select = document.getElementById('category-select');
+  if (!select) return;
+  const categories = new Set(WORDS.map((item) => item.hint));
+  customWordEntries.forEach((item) => categories.add(item.hint));
+  const sorted = ['All', ...Array.from(categories).sort((a, b) => a.localeCompare(b))];
+  select.innerHTML = sorted
+    .map((category) => `<option value="${category}">${category}</option>`)
+    .join('');
+  select.value = state.settings.categoryFilter || 'All';
+}
+
+function renderCustomWordPackInfo() {
+  const count = customWordEntries.length;
+  const noteEl = document.getElementById('custom-pack-count');
+  if (!noteEl) return;
+  noteEl.textContent = count
+    ? `${count} word${count !== 1 ? 's' : ''} loaded`
+    : t('wordPackEmpty');
+}
+
+function saveCustomWordPack() {
+  const textarea = document.getElementById('custom-wordpack-text');
+  if (!textarea) return;
+  state.settings.customWordpackText = textarea.value;
+  customWordEntries = parseCustomWordPack(state.settings.customWordpackText);
+  if (customWordEntries.length) {
+    state.settings.useCustomWords = true;
+    document.getElementById('toggle-custom-pack').classList.add('on');
+  }
+  persistSettings();
+  renderCategoryOptions();
+  renderCustomWordPackInfo();
+  alert(`${customWordEntries.length} custom word${customWordEntries.length !== 1 ? 's' : ''} saved.`);
+}
+
+function toggleCustomWordPack() {
+  state.settings.useCustomWords = !state.settings.useCustomWords;
+  document.getElementById('toggle-custom-pack').classList.toggle('on', state.settings.useCustomWords);
+  persistSettings();
+}
+
+function testSound() {
+  if (!state.settings.sound) {
+    alert(t('soundDisabled'));
+    return;
+  }
+  playSound('vote');
+}
+
 function initApp() {
   // Load settings from localStorage
   const savedSettings = localStorage.getItem('impostor-settings');
   if (savedSettings) {
     state.settings = { ...state.settings, ...JSON.parse(savedSettings) };
+  } else {
+    const browserLang = navigator.language.slice(0, 2);
+    if (['en', 'es', 'el'].includes(browserLang)) {
+      state.settings.language = browserLang;
+    }
+  }
+  if (state.settings.customWordpackText) {
+    customWordEntries = parseCustomWordPack(state.settings.customWordpackText);
+  }
+  const savedScores = localStorage.getItem('impostor-scores');
+  if (savedScores) {
+    state.scores = JSON.parse(savedScores);
   }
   currentLang = state.settings.language;
   updateTranslations();
@@ -430,14 +583,25 @@ function initApp() {
   document.getElementById("toggle-showHint").classList.toggle("on", state.settings.showHint);
   document.getElementById("toggle-vibration").classList.toggle("on", state.settings.vibration);
   document.getElementById("toggle-sound").classList.toggle("on", state.settings.sound);
+  document.getElementById("toggle-custom-pack").classList.toggle("on", state.settings.useCustomWords);
   document.getElementById("setting-timerMins").textContent = state.settings.timerMins;
   document.getElementById("setting-votingRounds").textContent = state.settings.votingRounds;
   document.getElementById('language-select').value = state.settings.language;
+  renderCategoryOptions();
+  renderCustomWordPackInfo();
+  document.getElementById('category-select').value = state.settings.categoryFilter;
+  document.getElementById('custom-wordpack-text').value = state.settings.customWordpackText || '';
+  const soundTestBtn = document.getElementById('sound-test-btn');
+  if (soundTestBtn) soundTestBtn.disabled = !state.settings.sound;
   document.getElementById('language-select').onchange = function() {
     state.settings.language = this.value;
     currentLang = this.value;
     updateTranslations();
-    localStorage.setItem('impostor-settings', JSON.stringify(state.settings));
+    persistSettings();
+  };
+  document.getElementById('category-select').onchange = function() {
+    state.settings.categoryFilter = this.value;
+    persistSettings();
   };
   applyTheme();
   applyAccent();
@@ -457,6 +621,9 @@ function updateTranslations() {
   MODE_NAMES.spy = t("mode_spy");
   MODE_NAMES.quick = t("mode_quick");
   MODE_NAMES.noguess = t("mode_noguess");
+  renderCustomWordPackInfo();
+  const soundTestBtn = document.getElementById('sound-test-btn');
+  if (soundTestBtn) soundTestBtn.textContent = t('soundTest');
 }
 
 function nav(screenId) {
@@ -532,13 +699,7 @@ function beginGame() {
     alert("Add at least 3 players to start!");
     return;
   }
-  state.wordSet = WORDS[Math.floor(Math.random() * WORDS.length)];
-  // Mode-specific adjustments
-  if (state.mode === "quick") {
-    state.settings.timerMins = 1; // Shorter timer for quick mode
-  } else {
-    state.settings.timerMins = 2; // Default
-  }
+  state.wordSet = getRandomWord();
   const count = state.mode === "double" ? Math.min(2, Math.floor(state.players.length / 3)) : 1;
   state.impostors = [];
   const pool = [...Array(state.players.length).keys()];
@@ -642,19 +803,20 @@ function finishSpyVictory() {
   nav("screen-result");
 }
 
-function flipRevealCard() {
-  if (state.cardFlipped) return;
-  state.cardFlipped = true;
+function holdCard() {
   document.getElementById("flip-card").classList.add("flipped");
-  if (state.settings.vibration && navigator.vibrate) navigator.vibrate(30);
-  playSound("reveal");
+  if (!state.cardFlipped) {
+    state.cardFlipped = true;
+    if (state.settings.vibration && navigator.vibrate) navigator.vibrate(30);
+    playSound("reveal");
+  }
+}
+
+function releaseCard() {
+  document.getElementById("flip-card").classList.remove("flipped");
 }
 
 function nextReveal() {
-  if (!state.cardFlipped) {
-    alert("Tap the card first to see your role!");
-    return;
-  }
   state.currentPlayerIndex += 1;
   if (state.currentPlayerIndex >= state.players.length) {
     startDiscussion();
@@ -665,7 +827,15 @@ function nextReveal() {
 
 function startDiscussion() {
   document.getElementById("discuss-round").textContent = state.round;
-  state.timerRemaining = state.settings.timerMins * 60;
+  if (state.extraDiscussion) {
+    document.querySelector("#screen-discuss h2").textContent = "Extra Discussion!";
+    document.querySelector("#screen-discuss p.muted").textContent = "Discuss again after the tie.";
+  } else {
+    document.querySelector("#screen-discuss h2").textContent = "Discuss!";
+    document.querySelector("#screen-discuss p.muted").textContent = "Talk it out. Find the impostor.";
+  }
+  const timerMins = state.mode === "quick" ? 1 : state.settings.timerMins;
+  state.timerRemaining = timerMins * 60;
   renderTimerDisplay();
   clearInterval(state.timerInterval);
   state.timerInterval = setInterval(() => {
@@ -692,37 +862,74 @@ function renderTimerDisplay() {
   txt.classList.toggle("urgent", urgent);
 }
 
-function resetTimer() {
-  state.timerRemaining = state.settings.timerMins * 60;
-  renderTimerDisplay();
-}
-
 function startVoting() {
   clearInterval(state.timerInterval);
   state.votes = {};
   state.playerVoted = [];
   state.currentVoterIndex = 0;
-  state.voteRoundNumber = 1;
-  // In noguess mode, impostors can't vote
-  if (state.mode === "noguess") {
-    state.impostors.forEach(idx => state.playerVoted[idx] = true);
+  state.extraDiscussion = false;
+  if (state.isRevote) {
+    state.voteRoundNumber += 1;
+    state.isRevote = false;
+  } else {
+    state.voteRoundNumber = 1;
   }
-  document.getElementById("vote-round").textContent = state.round;
+  if (state.mode === "noguess") {
+    state.impostors.forEach((idx) => {
+      state.playerVoted[idx] = true;
+    });
+  }
   document.getElementById("vote-message").textContent = "";
   document.getElementById("revote-btn").style.display = "none";
+  document.getElementById("vote-round").textContent = state.voteRoundNumber;
   renderVoteGrid();
   updateVoteTurnText();
   nav("screen-vote");
 }
 
+function finishVoting(chosenIndex, randomTie) {
+  const votedOutName = state.players[chosenIndex];
+  const isImpostor = state.impostors.includes(chosenIndex);
+  const message = isImpostor
+    ? `${votedOutName} was an impostor! Crewmates win.`
+    : `${votedOutName} was innocent. The impostors slip away.`;
+  finishGame(!isImpostor, message, votedOutName);
+}
+
+function resetTimer() {
+  state.timerRemaining = state.settings.timerMins * 60;
+  renderTimerDisplay();
+}
+
+function guessWord() {
+  clearInterval(state.timerInterval);
+  const guess = prompt(t("guessWordPrompt"));
+  if (!guess || !guess.trim()) return;
+  if (guess.toLowerCase().trim() === state.wordSet.word.toLowerCase()) {
+    // Impostor wins
+    finishGame(true, t("impostorGuessedCorrect"));
+  } else {
+    // Wrong, crew wins
+    finishGame(false, t("wrongGuessCrewWins"));
+  }
+}
+
 function renderVoteGrid() {
   const grid = document.getElementById("vote-grid");
+  const votingActive = state.currentVoterIndex < state.players.length;
   grid.innerHTML = state.players
     .map((player, i) => {
       const count = state.votes[i] || 0;
       const pct = state.players.length ? (count / state.players.length) * 100 : 0;
+      const classes = [
+        "vote-card",
+        count > 0 ? "has-votes" : "",
+        !votingActive ? "disabled" : ""
+      ]
+        .filter(Boolean)
+        .join(" ");
       return `
-        <div class="vote-card" id="vcard-${i}" onclick="castVote(${i})">
+        <div class="${classes}" id="vcard-${i}" onclick="castVote(${i})">
           <div class="vote-avatar">${AVATARS[i % AVATARS.length]}</div>
           <div class="vote-name">${player}</div>
           <div class="vote-count" id="vcount-${i}">${count}</div>
@@ -735,9 +942,18 @@ function renderVoteGrid() {
 }
 
 function updateVoteCards() {
+  const votingActive = state.currentVoterIndex < state.players.length;
   state.players.forEach((_, i) => {
-    document.getElementById(`vcount-${i}`).textContent = state.votes[i] || 0;
-    document.getElementById(`vbar-${i}`).style.width = `${((state.votes[i] || 0) / state.players.length) * 100}%`;
+    const count = state.votes[i] || 0;
+    const card = document.getElementById(`vcard-${i}`);
+    const countEl = document.getElementById(`vcount-${i}`);
+    const barEl = document.getElementById(`vbar-${i}`);
+    if (countEl) countEl.textContent = count;
+    if (barEl) barEl.style.width = `${(count / state.players.length) * 100}%`;
+    if (card) {
+      card.classList.toggle('has-votes', count > 0);
+      card.classList.toggle('disabled', !votingActive);
+    }
   });
 }
 
@@ -767,10 +983,10 @@ function castVote(targetIndex) {
 function updateVoteTurnText() {
   const label = document.getElementById("vote-turn-label");
   if (state.currentVoterIndex >= state.players.length) {
-    label.textContent = `All votes cast. Counting...`;
+    label.textContent = `All votes are in. Counting results...`;
   } else {
     const voterName = state.players[state.currentVoterIndex];
-    label.textContent = `Vote as ${voterName} (round ${state.voteRoundNumber}/${state.settings.votingRounds})`;
+    label.textContent = `Current voter: ${voterName} · Round ${state.voteRoundNumber}/${state.settings.votingRounds}`;
   }
 }
 
@@ -783,10 +999,12 @@ function evaluateVotingRound() {
 
   if (topPlayers.length > 1) {
     if (state.voteRoundNumber < state.settings.votingRounds) {
-      document.getElementById("vote-message").textContent = `Tie detected. Revote round ${state.voteRoundNumber + 1} is available.`;
-      document.getElementById("revote-btn").style.display = "block";
+      state.extraDiscussion = true;
+      state.isRevote = true;
+      startDiscussion();
       return;
     }
+
     const chosen = topPlayers[Math.floor(Math.random() * topPlayers.length)];
     document.getElementById("vote-message").textContent = `Tie remained. Selecting randomly from tied players.`;
     finishVoting(chosen, true);
@@ -806,40 +1024,36 @@ function startRevote() {
     state.impostors.forEach(idx => state.playerVoted[idx] = true);
   }
   document.getElementById("vote-message").textContent = `Revote round ${state.voteRoundNumber}.`;
+  document.getElementById("vote-round").textContent = state.voteRoundNumber;
   document.getElementById("revote-btn").style.display = "none";
   renderVoteGrid();
   updateVoteTurnText();
 }
 
-function finishVoting(votedOut, tieBroken) {
-  const votedName = state.players[votedOut] || "No one";
-  const impostorCaught = state.impostors.includes(votedOut);
+function finishGame(impostorWin, message, votedOutName = "N/A") {
   const impostorNames = state.impostors.map((i) => state.players[i]).join(" & ");
 
-  if (impostorCaught) {
-    state.players.forEach((player, i) => {
-      if (!state.impostors.includes(i)) state.scores[player] = (state.scores[player] || 0) + 1;
-    });
-  } else {
+  if (impostorWin) {
     state.impostors.forEach((i) => {
       const player = state.players[i];
       state.scores[player] = (state.scores[player] || 0) + 2;
     });
+  } else {
+    state.players.forEach((player, i) => {
+      if (!state.impostors.includes(i)) state.scores[player] = (state.scores[player] || 0) + 1;
+    });
   }
+  localStorage.setItem('impostor-scores', JSON.stringify(state.scores));
 
-  document.getElementById("result-icon").textContent = impostorCaught ? "🎉" : "😈";
-  document.getElementById("result-title").textContent = impostorCaught ? "Crewmates Win!" : "Impostors Win!";
-  document.getElementById("result-sub").textContent = impostorCaught
-    ? "The impostor was caught!"
-    : tieBroken
-    ? "Tie was broken and impostors escaped..."
-    : "The impostors slipped away...";
+  document.getElementById("result-icon").textContent = impostorWin ? "😈" : "🎉";
+  document.getElementById("result-title").textContent = impostorWin ? "Impostors Win!" : "Crewmates Win!";
+  document.getElementById("result-sub").textContent = message;
   document.getElementById("res-impostor").textContent = impostorNames;
   document.getElementById("res-word").textContent = state.wordSet.word;
   document.getElementById("res-mode").textContent = MODE_NAMES[state.mode];
-  document.getElementById("res-voted").textContent = votedName;
+  document.getElementById("res-voted").textContent = votedOutName;
   playSound("result");
-  if (impostorCaught) spawnConfetti();
+  if (!impostorWin) spawnConfetti();
   nav("screen-result");
 }
 
@@ -865,7 +1079,7 @@ function spawnConfetti() {
 function playAgain() {
   state.currentPlayerIndex = 0;
   state.round += 1;
-  state.wordSet = WORDS[Math.floor(Math.random() * WORDS.length)];
+  state.wordSet = getRandomWord();
   const count = state.mode === "double" ? Math.min(2, Math.floor(state.players.length / 3)) : 1;
   state.impostors = [];
   const pool = [...Array(state.players.length).keys()];
@@ -898,6 +1112,7 @@ function renderScores() {
 function clearScores() {
   if (!confirm("Clear all scores?")) return;
   state.scores = {};
+  localStorage.removeItem('impostor-scores');
   renderScores();
 }
 
@@ -916,7 +1131,11 @@ function toggleSetting(key) {
   state.settings[key] = !state.settings[key];
   const el = document.getElementById(`toggle-${key}`);
   el.classList.toggle("on", state.settings[key]);
-  localStorage.setItem('impostor-settings', JSON.stringify(state.settings));
+  if (key === 'sound') {
+    const soundTestBtn = document.getElementById('sound-test-btn');
+    if (soundTestBtn) soundTestBtn.disabled = !state.settings.sound;
+  }
+  persistSettings();
 }
 
 function toggleTheme() {
