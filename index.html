@@ -907,12 +907,12 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
 <div id="screen-settings" class="screen">
   <div style="width:100%;max-width:360px;display:flex;align-items:center;gap:12px;margin-bottom:20px;">
     <button class="btn-add" onclick="nav('screen-home')" style="padding:10px 14px;font-size:0.9rem;">←</button>
-    <h2>Settings</h2>
+    <h2 data-i18n="settingsTitle">Settings</h2>
   </div>
   <div class="settings-row">
     <div>
-      <div class="settings-label">Discussion Timer</div>
-      <div class="settings-sub">Minutes for discussion phase</div>
+      <div class="settings-label" data-i18n="discussionTimer">Discussion Timer</div>
+      <div class="settings-sub" data-i18n="discussionTimerSub">Minutes for discussion phase</div>
     </div>
     <div class="stepper">
       <button class="stepper-btn" onclick="adjustSetting('timerMins',-1)" aria-label="Decrease discussion timer">-</button>
@@ -922,8 +922,8 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
   </div>
   <div class="settings-row">
     <div>
-      <div class="settings-label">Voting Rounds</div>
-      <div class="settings-sub">Votes before result shows</div>
+      <div class="settings-label" data-i18n="votingRounds">Voting Rounds</div>
+      <div class="settings-sub" data-i18n="votingRoundsSub">Votes before result shows</div>
     </div>
     <div class="stepper">
       <button class="stepper-btn" onclick="adjustSetting('votingRounds',-1)" aria-label="Decrease voting rounds">-</button>
@@ -933,8 +933,8 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
   </div>
   <div class="settings-row">
     <div>
-      <div class="settings-label">Show Category Hint</div>
-      <div class="settings-sub">Impostors see word category</div>
+      <div class="settings-label" data-i18n="showCategoryHint">Show Category Hint</div>
+      <div class="settings-sub" data-i18n="showCategoryHintSub">Impostors see word category</div>
     </div>
     <div class="toggle on" id="toggle-showHint" onclick="toggleSetting('showHint')" aria-label="Toggle category hint for impostors" role="button">
       <div class="toggle-knob"></div>
@@ -942,8 +942,8 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
   </div>
   <div class="settings-row">
     <div>
-      <div class="settings-label">Vibration</div>
-      <div class="settings-sub">Haptic feedback on reveal</div>
+      <div class="settings-label" data-i18n="vibration">Vibration</div>
+      <div class="settings-sub" data-i18n="vibrationSub">Haptic feedback on reveal</div>
     </div>
     <div class="toggle on" id="toggle-vibration" onclick="toggleSetting('vibration')" aria-label="Toggle haptic feedback" role="button">
       <div class="toggle-knob"></div>
@@ -951,8 +951,8 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
   </div>
   <div class="settings-row">
     <div>
-      <div class="settings-label">Theme</div>
-      <div class="settings-sub">Light / dark mode</div>
+      <div class="settings-label" data-i18n="theme">Theme</div>
+      <div class="settings-sub" data-i18n="themeSub">Light / dark mode</div>
     </div>
     <div class="toggle" id="toggle-theme" onclick="toggleTheme()" aria-label="Toggle light/dark theme" role="button">
       <div class="toggle-knob"></div>
@@ -960,19 +960,28 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
   </div>
   <div class="settings-row">
     <div>
-      <div class="settings-label">Accent</div>
-      <div class="settings-sub">Cycle the highlight color</div>
+      <div class="settings-label" data-i18n="accent">Accent</div>
+      <div class="settings-sub" data-i18n="accentSub">Cycle the highlight color</div>
     </div>
     <button class="btn btn-secondary" onclick="cycleAccent()" style="width:auto;padding:10px 14px;" aria-label="Cycle accent color">Accent</button>
   </div>
   <div class="settings-row">
     <div>
-      <div class="settings-label">Sound Effects</div>
-      <div class="settings-sub">Play reveal, vote, and result audio</div>
+      <div class="settings-label" data-i18n="sound">Sound Effects</div>
+      <div class="settings-sub" data-i18n="soundSub">Play reveal, vote, and result audio</div>
     </div>
     <div class="toggle on" id="toggle-sound" onclick="toggleSetting('sound')" aria-label="Toggle sound effects" role="button">
       <div class="toggle-knob"></div>
     </div>
+  </div>
+  <div class="settings-row">
+    <div>
+      <div class="settings-label" data-i18n="language">Language</div>
+    </div>
+    <select id="language-select">
+      <option value="en">English</option>
+      <option value="es">Español</option>
+    </select>
   </div>
 </div>
 
