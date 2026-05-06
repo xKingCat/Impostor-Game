@@ -32,7 +32,7 @@ const WORDS = [
 ];
 
 const AVATARS = ["🐺", "🦊", "🐻", "🐼", "🦁", "🐯", "🐨", "🦅", "🦋", "🐙", "🦄", "🐸"];
-const MODE_NAMES = { classic: "Classic", double: "Double Agent", nohint: "No Hint", spy: "Spy Mode" };
+const MODE_NAMES = { classic: "Classic", double: "Double Agent", nohint: "No Hint", spy: "Spy Mode", quick: "Quick Round", noguess: "No Guess" };
 const ACCENTS = [
   { accent: "#e8ff5a", accent2: "#ff5a7e", accent3: "#5affda" },
   { accent: "#7c3aed", accent2: "#ec4899", accent3: "#34d399" },
@@ -115,8 +115,11 @@ function initApp() {
 }
 
 function nav(screenId) {
-  document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
-  document.getElementById(screenId).classList.add("active");
+  document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active", "slide-in-left", "slide-in-right"));
+  const screen = document.getElementById(screenId);
+  screen.classList.add("active", "slide-in-left");
+  // Remove animation class after transition
+  setTimeout(() => screen.classList.remove("slide-in-left"), 300);
   if (screenId === "screen-scores") renderScores();
 }
 
@@ -185,6 +188,12 @@ function beginGame() {
     return;
   }
   state.wordSet = WORDS[Math.floor(Math.random() * WORDS.length)];
+  // Mode-specific adjustments
+  if (state.mode === "quick") {
+    state.settings.timerMins = 1; // Shorter timer for quick mode
+  } else {
+    state.settings.timerMins = 2; // Default
+  }
   const count = state.mode === "double" ? Math.min(2, Math.floor(state.players.length / 3)) : 1;
   state.impostors = [];
   const pool = [...Array(state.players.length).keys()];
@@ -349,6 +358,10 @@ function startVoting() {
   state.playerVoted = [];
   state.currentVoterIndex = 0;
   state.voteRoundNumber = 1;
+  // In noguess mode, impostors can't vote
+  if (state.mode === "noguess") {
+    state.impostors.forEach(idx => state.playerVoted[idx] = true);
+  }
   document.getElementById("vote-round").textContent = state.round;
   document.getElementById("vote-message").textContent = "";
   document.getElementById("revote-btn").style.display = "none";
@@ -390,8 +403,10 @@ function castVote(targetIndex) {
   playSound("vote");
   if (state.settings.vibration && navigator.vibrate) navigator.vibrate(20);
   updateVoteCards();
-  state.currentVoterIndex += 1;
-  updateVoteRemaining();
+  // Find next non-voted player
+  do {
+    state.currentVoterIndex += 1;
+  } while (state.currentVoterIndex < state.players.length && state.playerVoted[state.currentVoterIndex]);
   updateVoteTurnText();
   if (state.currentVoterIndex >= state.players.length) {
     setTimeout(evaluateVotingRound, 600);
@@ -435,6 +450,10 @@ function startRevote() {
   state.votes = {};
   state.playerVoted = [];
   state.currentVoterIndex = 0;
+  // In noguess mode, impostors can't vote
+  if (state.mode === "noguess") {
+    state.impostors.forEach(idx => state.playerVoted[idx] = true);
+  }
   document.getElementById("vote-message").textContent = `Revote round ${state.voteRoundNumber}.`;
   document.getElementById("revote-btn").style.display = "none";
   renderVoteGrid();
