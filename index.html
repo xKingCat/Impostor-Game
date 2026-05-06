@@ -29,6 +29,22 @@
   --muted: #5a6a8a;
   --impostor: #ff3d6b;
   --safe: #3dffa0;
+  --shadow: rgba(0,0,0,0.24);
+}
+
+body.light {
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface2: #eef2f8;
+  --border: rgba(15,23,42,0.08);
+  --accent: #f59e0b;
+  --accent2: #ec4899;
+  --accent3: #2dd4bf;
+  --text: #111827;
+  --muted: #64748b;
+  --impostor: #db2777;
+  --safe: #22c55e;
+  --shadow: rgba(15,23,42,0.16);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -181,6 +197,8 @@ textarea { resize: none; height: 80px; }
   -webkit-appearance: none;
 }
 .btn:active { transform: scale(0.96); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .stepper-btn:focus-visible, .toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .btn-primary {
   background: var(--accent);
   color: #080b14;
@@ -197,6 +215,11 @@ textarea { resize: none; height: 80px; }
   width: 100%;
   max-width: 360px;
 }
+.btn-secondary:hover { box-shadow: 0 0 18px rgba(255,255,255,0.08); }
+#vote-turn-label { font-size: 0.9rem; color: var(--text); margin-top: 8px; text-align: center; min-height: 24px; }
+#vote-message { margin-top: 8px; min-height: 22px; color: var(--accent); text-align: center; }
+.spy-guess input { width: 100%; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; color: var(--text); margin-top: 12px; }
+.vote-card { min-height: 128px; }
 .btn-danger {
   background: rgba(255,61,107,0.15);
   color: var(--impostor);
@@ -724,7 +747,7 @@ textarea { resize: none; height: 80px; }
     </div>
   </div>
 
-  <button class="btn btn-primary mt16" onclick="beginGame()">Start Game →</button>
+  <button id="start-game-btn" class="btn btn-primary mt16" onclick="beginGame()" disabled>Start Game →</button>
 </div>
 
 <!-- ============ SCREEN: PASS DEVICE ============ -->
@@ -733,7 +756,7 @@ textarea { resize: none; height: 80px; }
   <div class="pass-avatar" id="pass-avatar" style="background:var(--surface)"></div>
   <h2 id="pass-name">Player</h2>
   <p class="muted mt8" style="margin-bottom:24px;">Pass the device to this player</p>
-  <button class="btn btn-primary" onclick="nav('screen-reveal')">I have it →</button>
+  <button class="btn btn-primary" id="pass-confirm-btn">I have it →</button>
 </div>
 
 <!-- ============ SCREEN: REVEAL ============ -->
@@ -764,6 +787,10 @@ textarea { resize: none; height: 80px; }
         <div class="role-label" id="reveal-role-label">IMPOSTOR</div>
         <div class="role-word" id="reveal-word">—</div>
         <div class="role-hint" id="reveal-hint"></div>
+        <div class="spy-guess" id="spy-guess" style="display:none; width:100%; margin-top:18px;">
+          <input id="spy-guess-input" type="text" placeholder="Type the word to win" maxlength="20">
+          <button class="btn btn-primary mt8" onclick="submitSpyGuess()">Submit</button>
+        </div>
       </div>
     </div>
   </div>
@@ -794,8 +821,11 @@ textarea { resize: none; height: 80px; }
   <div class="round-badge">Round <strong id="vote-round">1</strong> · Voting</div>
   <h2 style="margin-bottom:6px">Cast Your Vote</h2>
   <p class="votes-remaining" id="votes-remaining">0 of 0 voted</p>
+  <div class="muted" id="vote-turn-label">Vote as the current player</div>
+  <div class="muted" id="vote-message" style="margin-top:8px; min-height:24px"></div>
   <div class="vote-grid" id="vote-grid"></div>
-  <p class="muted" style="font-size:0.75rem">Tap a player to vote them out</p>
+  <button class="btn btn-secondary mt8" id="revote-btn" style="display:none; max-width:260px" onclick="startRevote()">Revote</button>
+  <p class="muted" style="font-size:0.75rem; margin-top:12px;">Tap a player to vote them out</p>
 </div>
 
 <!-- ============ SCREEN: RESULT ============ -->
@@ -884,463 +914,33 @@ textarea { resize: none; height: 80px; }
       <div class="toggle-knob"></div>
     </div>
   </div>
+  <div class="settings-row">
+    <div>
+      <div class="settings-label">Theme</div>
+      <div class="settings-sub">Light / dark mode</div>
+    </div>
+    <div class="toggle" id="toggle-theme" onclick="toggleTheme()">
+      <div class="toggle-knob"></div>
+    </div>
+  </div>
+  <div class="settings-row">
+    <div>
+      <div class="settings-label">Accent</div>
+      <div class="settings-sub">Cycle the highlight color</div>
+    </div>
+    <button class="btn btn-secondary" onclick="cycleAccent()" style="width:auto;padding:10px 14px;">Accent</button>
+  </div>
+  <div class="settings-row">
+    <div>
+      <div class="settings-label">Sound Effects</div>
+      <div class="settings-sub">Play reveal, vote, and result audio</div>
+    </div>
+    <div class="toggle on" id="toggle-sound" onclick="toggleSetting('sound')">
+      <div class="toggle-knob"></div>
+    </div>
+  </div>
 </div>
 
-<script>
-// ─── STATE ─────────────────────────────────────────────────────────────────
-const WORDS = [
-  {word:"Pizza",hint:"Food"},
-  {word:"Hospital",hint:"Place"},
-  {word:"Football",hint:"Sport"},
-  {word:"Teacher",hint:"Job"},
-  {word:"Phone",hint:"Tech"},
-  {word:"Mountain",hint:"Nature"},
-  {word:"Guitar",hint:"Music"},
-  {word:"Passport",hint:"Travel"},
-  {word:"Submarine",hint:"Vehicle"},
-  {word:"Dentist",hint:"Job"},
-  {word:"Cinema",hint:"Place"},
-  {word:"Bitcoin",hint:"Finance"},
-  {word:"Yoga",hint:"Fitness"},
-  {word:"Sushi",hint:"Food"},
-  {word:"Library",hint:"Place"},
-  {word:"Helicopter",hint:"Vehicle"},
-  {word:"Volcano",hint:"Nature"},
-  {word:"Piano",hint:"Music"},
-  {word:"Visa",hint:"Travel"},
-  {word:"Surgeon",hint:"Job"},
-  {word:"Basketball",hint:"Sport"},
-  {word:"Museum",hint:"Place"},
-  {word:"Headphones",hint:"Tech"},
-  {word:"Avocado",hint:"Food"},
-  {word:"Skateboard",hint:"Sport"},
-  {word:"Bonfire",hint:"Nature"},
-  {word:"Trumpet",hint:"Music"},
-  {word:"Backpack",hint:"Travel"},
-  {word:"Architect",hint:"Job"},
-  {word:"Microwave",hint:"Tech"},
-];
-
-const AVATARS = ["🐺","🦊","🐻","🐼","🦁","🐯","🐨","🦅","🦋","🐙","🦄","🐸"];
-const MODE_NAMES = { classic:"Classic", double:"Double Agent", nohint:"No Hint", spy:"Spy Mode" };
-
-let state = {
-  players: [],
-  mode: "classic",
-  round: 1,
-  currentPlayerIndex: 0,
-  impostors: [],
-  wordSet: null,
-  cardFlipped: false,
-  votes: {},        // playerIndex → count
-  playerVoted: [],  // who has voted (index of voter)
-  scores: {},       // playerName → points
-  settings: {
-    timerMins: 2,
-    votingRounds: 1,
-    showHint: true,
-    vibration: true,
-  },
-  timerInterval: null,
-  timerRemaining: 120,
-};
-
-// ─── NAVIGATION ─────────────────────────────────────────────────────────────
-function nav(screenId) {
-  document.querySelectorAll('.screen').forEach(s => {
-    if (s.id !== screenId) {
-      s.classList.remove('active');
-    }
-  });
-  const next = document.getElementById(screenId);
-  next.classList.add('active');
-}
-
-// ─── SETUP ──────────────────────────────────────────────────────────────────
-function addPlayer() {
-  const input = document.getElementById('new-player-input');
-  const name = input.value.trim();
-  if (!name || state.players.length >= 12) { input.value=''; return; }
-  if (state.players.includes(name)) { input.value=''; return; }
-  state.players.push(name);
-  input.value = '';
-  renderPlayerList();
-  input.focus();
-}
-
-function removePlayer(i) {
-  state.players.splice(i, 1);
-  renderPlayerList();
-}
-
-function renderPlayerList() {
-  const list = document.getElementById('player-list');
-  const badge = document.getElementById('player-count-badge');
-  badge.textContent = state.players.length + ' player' + (state.players.length !== 1 ? 's' : '');
-  list.innerHTML = state.players.map((p, i) =>
-    `<div class="player-chip">
-      <span>${AVATARS[i % AVATARS.length]} ${p}</span>
-      <button class="player-chip-remove" onclick="removePlayer(${i})">✕</button>
-    </div>`
-  ).join('');
-}
-
-function selectMode(mode, el) {
-  state.mode = mode;
-  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-}
-
-function beginGame() {
-  if (state.players.length < 3) {
-    alert('Add at least 3 players to start!');
-    return;
-  }
-  // Pick word
-  state.wordSet = WORDS[Math.floor(Math.random() * WORDS.length)];
-  // Pick impostor(s)
-  const count = state.mode === 'double' ? Math.min(2, Math.floor(state.players.length / 3)) : 1;
-  state.impostors = [];
-  const pool = [...Array(state.players.length).keys()];
-  for (let i = 0; i < count; i++) {
-    const idx = Math.floor(Math.random() * pool.length);
-    state.impostors.push(pool.splice(idx, 1)[0]);
-  }
-  state.currentPlayerIndex = 0;
-  state.round++;
-  state.votes = {};
-  state.playerVoted = [];
-  state.cardFlipped = false;
-  setupPassScreen();
-}
-
-// ─── PASS SCREEN ─────────────────────────────────────────────────────────────
-function setupPassScreen() {
-  const p = state.players[state.currentPlayerIndex];
-  document.getElementById('pass-name').textContent = p;
-  const av = document.getElementById('pass-avatar');
-  av.textContent = AVATARS[state.currentPlayerIndex % AVATARS.length];
-
-  // Dots
-  const dots = document.getElementById('pass-dots');
-  dots.innerHTML = state.players.map((_, i) => {
-    let cls = 'dot';
-    if (i < state.currentPlayerIndex) cls += ' done';
-    if (i === state.currentPlayerIndex) cls += ' current';
-    return `<div class="${cls}"></div>`;
-  }).join('');
-
-  nav('screen-pass');
-}
-
-// ─── REVEAL SCREEN ──────────────────────────────────────────────────────────
-document.getElementById('screen-pass').querySelector('.btn').addEventListener('click', function(){});
-
-function goReveal() { /* handled by onclick on button in HTML */ }
-
-// Called when user taps "I have it"
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelector('#screen-pass .btn').onclick = () => {
-    prepareReveal();
-    nav('screen-reveal');
-  };
-});
-
-function prepareReveal() {
-  const i = state.currentPlayerIndex;
-  const isImpostor = state.impostors.includes(i);
-  const p = state.players[i];
-
-  // Reset card
-  state.cardFlipped = false;
-  const card = document.getElementById('flip-card');
-  card.classList.remove('flipped');
-
-  document.getElementById('reveal-for-label').innerHTML = `For <strong>${p}</strong>`;
-  document.getElementById('reveal-round').textContent = state.round;
-  document.getElementById('reveal-mode-label').textContent = MODE_NAMES[state.mode];
-
-  // Pre-load back face content (hidden until flip)
-  const back = document.getElementById('card-back-face');
-  if (isImpostor) {
-    back.className = 'card-face card-back role-impostor';
-    document.getElementById('reveal-emoji').textContent = '🕵️';
-    document.getElementById('reveal-role-label').textContent = 'IMPOSTOR';
-    if (state.mode === 'spy') {
-      document.getElementById('reveal-word').textContent = state.wordSet.word;
-      document.getElementById('reveal-hint').textContent = '(You know the word too)';
-    } else {
-      document.getElementById('reveal-word').textContent = '';
-      document.getElementById('reveal-hint').textContent = state.settings.showHint && state.mode !== 'nohint'
-        ? 'Category: ' + state.wordSet.hint : 'No hints this round';
-    }
-  } else {
-    back.className = 'card-face card-back role-safe';
-    document.getElementById('reveal-emoji').textContent = '✅';
-    document.getElementById('reveal-role-label').textContent = 'CREWMATE';
-    document.getElementById('reveal-word').textContent = state.wordSet.word;
-    document.getElementById('reveal-hint').textContent = state.mode !== 'nohint' ? 'Category: ' + state.wordSet.hint : '';
-  }
-
-  // Last player? Change button label
-  const nextBtn = document.getElementById('reveal-next-btn');
-  if (state.currentPlayerIndex >= state.players.length - 1) {
-    nextBtn.textContent = 'Start Discussion →';
-  } else {
-    nextBtn.textContent = 'Next Player →';
-  }
-}
-
-function flipRevealCard() {
-  if (state.cardFlipped) return;
-  state.cardFlipped = true;
-  document.getElementById('flip-card').classList.add('flipped');
-  if (state.settings.vibration && navigator.vibrate) navigator.vibrate(30);
-}
-
-function nextReveal() {
-  if (!state.cardFlipped) {
-    alert('Tap the card first to see your role!');
-    return;
-  }
-  state.currentPlayerIndex++;
-  if (state.currentPlayerIndex >= state.players.length) {
-    startDiscussion();
-  } else {
-    setupPassScreen();
-  }
-}
-
-// ─── DISCUSSION ──────────────────────────────────────────────────────────────
-function startDiscussion() {
-  document.getElementById('discuss-round').textContent = state.round;
-  state.timerRemaining = state.settings.timerMins * 60;
-  renderTimerDisplay();
-  clearInterval(state.timerInterval);
-  state.timerInterval = setInterval(() => {
-    state.timerRemaining--;
-    renderTimerDisplay();
-    if (state.timerRemaining <= 0) {
-      clearInterval(state.timerInterval);
-      startVoting();
-    }
-  }, 1000);
-  nav('screen-discuss');
-}
-
-function renderTimerDisplay() {
-  const total = state.settings.timerMins * 60;
-  const pct = state.timerRemaining / total * 100;
-  const mins = Math.floor(state.timerRemaining / 60);
-  const secs = state.timerRemaining % 60;
-  const bar = document.getElementById('timer-bar');
-  const txt = document.getElementById('timer-text');
-  bar.style.width = pct + '%';
-  txt.textContent = `${mins}:${secs.toString().padStart(2,'0')}`;
-  const urgent = state.timerRemaining <= 30;
-  bar.classList.toggle('urgent', urgent);
-  txt.classList.toggle('urgent', urgent);
-}
-
-function resetTimer() {
-  state.timerRemaining = state.settings.timerMins * 60;
-  renderTimerDisplay();
-}
-
-// ─── VOTING ──────────────────────────────────────────────────────────────────
-function startVoting() {
-  clearInterval(state.timerInterval);
-  state.votes = {};
-  state.playerVoted = [];
-  document.getElementById('vote-round').textContent = state.round;
-  renderVoteGrid();
-  nav('screen-vote');
-}
-
-function renderVoteGrid() {
-  const grid = document.getElementById('vote-grid');
-  grid.innerHTML = state.players.map((p, i) => {
-    const count = state.votes[i] || 0;
-    const maxVotes = state.players.length;
-    const pct = maxVotes > 0 ? (count / maxVotes * 100) : 0;
-    return `<div class="vote-card" id="vcard-${i}" onclick="castVote(${i})">
-      <div class="vote-avatar">${AVATARS[i % AVATARS.length]}</div>
-      <div class="vote-name">${p}</div>
-      <div class="vote-count" id="vcount-${i}">${count}</div>
-      <div class="vote-bar-wrap"><div class="vote-bar" id="vbar-${i}" style="width:${pct}%"></div></div>
-    </div>`;
-  }).join('');
-  updateVoteRemaining();
-}
-
-function castVote(targetIndex) {
-  // Each player gets one vote — we track by number of total votes cast
-  const totalVotesCast = Object.values(state.votes).reduce((a,b)=>a+b,0);
-  if (totalVotesCast >= state.players.length) return;
-
-  state.votes[targetIndex] = (state.votes[targetIndex] || 0) + 1;
-
-  // Animate that card
-  const card = document.getElementById('vcard-' + targetIndex);
-  if (state.settings.vibration && navigator.vibrate) navigator.vibrate(20);
-
-  // Update counts + bars
-  const maxVotes = Math.max(...Object.values(state.votes), 1);
-  state.players.forEach((_, i) => {
-    const c = state.votes[i] || 0;
-    document.getElementById('vcount-' + i).textContent = c;
-    document.getElementById('vbar-' + i).style.width = (c / state.players.length * 100) + '%';
-  });
-
-  updateVoteRemaining();
-
-  const totalNow = Object.values(state.votes).reduce((a,b)=>a+b,0);
-  if (totalNow >= state.players.length) {
-    setTimeout(finishVoting, 800);
-  }
-}
-
-function updateVoteRemaining() {
-  const cast = Object.values(state.votes).reduce((a,b)=>a+b,0);
-  document.getElementById('votes-remaining').textContent = `${cast} of ${state.players.length} voted`;
-}
-
-function finishVoting() {
-  // Find most voted player
-  let maxVotes = -1, votedOut = -1;
-  state.players.forEach((_, i) => {
-    if ((state.votes[i] || 0) > maxVotes) {
-      maxVotes = state.votes[i] || 0;
-      votedOut = i;
-    }
-  });
-
-  const impostorCaught = state.impostors.includes(votedOut);
-  const impostorNames = state.impostors.map(i => state.players[i]).join(' & ');
-
-  // Update scores
-  if (impostorCaught) {
-    // Crewmates win — everyone except impostors gets a point
-    state.players.forEach((p, i) => {
-      if (!state.impostors.includes(i)) {
-        state.scores[p] = (state.scores[p] || 0) + 1;
-      }
-    });
-  } else {
-    // Impostors win — they get 2 points each
-    state.impostors.forEach(i => {
-      const p = state.players[i];
-      state.scores[p] = (state.scores[p] || 0) + 2;
-    });
-  }
-
-  // Fill result screen
-  document.getElementById('result-icon').textContent = impostorCaught ? '🎉' : '😈';
-  document.getElementById('result-title').textContent = impostorCaught ? 'Crewmates Win!' : 'Impostors Win!';
-  document.getElementById('result-sub').textContent = impostorCaught
-    ? 'The impostor was caught!'
-    : 'The impostors slipped away...';
-  document.getElementById('res-impostor').textContent = impostorNames;
-  document.getElementById('res-word').textContent = state.wordSet.word;
-  document.getElementById('res-mode').textContent = MODE_NAMES[state.mode];
-  document.getElementById('res-voted').textContent = state.players[votedOut];
-
-  if (impostorCaught) spawnConfetti();
-  nav('screen-result');
-}
-
-// ─── CONFETTI ────────────────────────────────────────────────────────────────
-function spawnConfetti() {
-  const colors = ['#e8ff5a','#ff5a7e','#5affda','#ffffff','#ffaa5a'];
-  for (let i = 0; i < 50; i++) {
-    setTimeout(() => {
-      const el = document.createElement('div');
-      el.className = 'confetti-piece';
-      el.style.left = Math.random() * 100 + 'vw';
-      el.style.background = colors[Math.floor(Math.random() * colors.length)];
-      el.style.transform = `rotate(${Math.random()*360}deg)`;
-      el.style.animationDuration = (1.5 + Math.random() * 2) + 's';
-      el.style.animationDelay = (Math.random() * 0.5) + 's';
-      el.style.width = (6 + Math.random() * 8) + 'px';
-      el.style.height = (6 + Math.random() * 8) + 'px';
-      document.body.appendChild(el);
-      setTimeout(() => el.remove(), 4000);
-    }, i * 30);
-  }
-}
-
-// ─── PLAY AGAIN ──────────────────────────────────────────────────────────────
-function playAgain() {
-  state.currentPlayerIndex = 0;
-  state.wordSet = WORDS[Math.floor(Math.random() * WORDS.length)];
-  const count = state.mode === 'double' ? Math.min(2, Math.floor(state.players.length / 3)) : 1;
-  state.impostors = [];
-  const pool = [...Array(state.players.length).keys()];
-  for (let i = 0; i < count; i++) {
-    const idx = Math.floor(Math.random() * pool.length);
-    state.impostors.push(pool.splice(idx, 1)[0]);
-  }
-  state.votes = {};
-  state.playerVoted = [];
-  state.cardFlipped = false;
-  setupPassScreen();
-}
-
-// ─── SCORES ──────────────────────────────────────────────────────────────────
-function renderScores() {
-  const list = document.getElementById('score-list');
-  const sorted = Object.entries(state.scores).sort((a,b)=>b[1]-a[1]);
-  if (sorted.length === 0) {
-    list.innerHTML = '<p class="muted text-center">No scores yet. Play a round!</p>';
-    return;
-  }
-  list.innerHTML = sorted.map(([name, pts], i) =>
-    `<div class="score-item">
-      <span class="score-rank">#${i+1}</span>
-      <span class="score-name">${AVATARS[i % AVATARS.length]} ${name}</span>
-      <span class="score-pts">${pts} pts</span>
-    </div>`
-  ).join('');
-}
-
-function clearScores() {
-  state.scores = {};
-  renderScores();
-}
-
-// ─── SETTINGS ────────────────────────────────────────────────────────────────
-function adjustSetting(key, delta) {
-  const limits = { timerMins: [1, 10], votingRounds: [1, 5] };
-  const [min, max] = limits[key];
-  state.settings[key] = Math.max(min, Math.min(max, state.settings[key] + delta));
-  document.getElementById('setting-' + key).textContent = state.settings[key];
-}
-
-function toggleSetting(key) {
-  state.settings[key] = !state.settings[key];
-  const el = document.getElementById('toggle-' + key);
-  el.classList.toggle('on', state.settings[key]);
-}
-
-// ─── HOOK SCREEN TRANSITIONS ─────────────────────────────────────────────────
-// Patch nav to also run screen-specific setup
-const _nav = nav;
-window.nav = function(screenId) {
-  if (screenId === 'screen-scores') renderScores();
-  _nav(screenId);
-};
-
-// Wire pass screen button (DOM ready)
-window.addEventListener('DOMContentLoaded', () => {
-  document.querySelector('#screen-pass .btn-primary').onclick = () => {
-    prepareReveal();
-    nav('screen-reveal');
-  };
-});
-
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js");
-}
-</script>
+<script src='app.js'></script>
 </body>
 </html>
