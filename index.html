@@ -96,6 +96,31 @@ body {
   transform: translateY(-20px) scale(1.02);
   pointer-events: none;
 }
+.screen.slide-in-left {
+  transform: translateX(-100%);
+}
+.screen.slide-in-left.active {
+  transform: translateX(0);
+}
+.screen.slide-in-right {
+  transform: translateX(100%);
+}
+.screen.slide-in-right.active {
+  transform: translateX(0);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+  .screen { padding: 16px; }
+  .btn, .mode-card, .vote-card, .player-chip { min-height: 44px; }
+  .input-group input, textarea { min-height: 44px; }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .screen { padding: 12px; }
+  h1 { font-size: clamp(1.5rem, 6vw, 2.5rem); }
+  .card-scene { width: 200px; height: 260px; }
+  .timer-bar-wrap { margin-bottom: 12px; }
+}
 
 /* TYPOGRAPHY */
 h1 {
@@ -716,9 +741,9 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
   <div class="player-list-setup" id="player-list"></div>
 
   <div class="add-player-row">
-    <input type="text" id="new-player-input" placeholder="Player name…" maxlength="18"
+    <input type="text" id="new-player-input" placeholder="Player name…" maxlength="18" aria-label="Enter player name"
       onkeydown="if(event.key==='Enter')addPlayer()">
-    <button class="btn-add" onclick="addPlayer()">+</button>
+    <button class="btn-add" onclick="addPlayer()" aria-label="Add player">+</button>
   </div>
 
   <div class="divider"></div>
@@ -745,9 +770,19 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
       <span class="mode-name">Spy Mode</span>
       <span class="mode-desc">Impostor knows the word too</span>
     </div>
+    <div class="mode-card" onclick="selectMode('quick',this)">
+      <span class="mode-icon">⚡</span>
+      <span class="mode-name">Quick Round</span>
+      <span class="mode-desc">Shorter discussion timer</span>
+    </div>
+    <div class="mode-card" onclick="selectMode('noguess',this)">
+      <span class="mode-icon">🚫</span>
+      <span class="mode-name">No Guess</span>
+      <span class="mode-desc">Impostors can't guess</span>
+    </div>
   </div>
 
-  <button id="start-game-btn" class="btn btn-primary mt16" onclick="beginGame()" disabled>Start Game →</button>
+  <button id="start-game-btn" class="btn btn-primary mt16" onclick="beginGame()" disabled aria-label="Start the game">Start Game →</button>
 </div>
 
 <!-- ============ SCREEN: PASS DEVICE ============ -->
@@ -756,7 +791,7 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
   <div class="pass-avatar" id="pass-avatar" style="background:var(--surface)"></div>
   <h2 id="pass-name">Player</h2>
   <p class="muted mt8" style="margin-bottom:24px;">Pass the device to this player</p>
-  <button class="btn btn-primary" id="pass-confirm-btn">I have it →</button>
+  <button class="btn btn-primary" id="pass-confirm-btn" aria-label="Confirm you have the device">I have it →</button>
 </div>
 
 <!-- ============ SCREEN: REVEAL ============ -->
@@ -788,8 +823,8 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
         <div class="role-word" id="reveal-word">—</div>
         <div class="role-hint" id="reveal-hint"></div>
         <div class="spy-guess" id="spy-guess" style="display:none; width:100%; margin-top:18px;">
-          <input id="spy-guess-input" type="text" placeholder="Type the word to win" maxlength="20">
-          <button class="btn btn-primary mt8" onclick="submitSpyGuess()">Submit</button>
+          <input id="spy-guess-input" type="text" placeholder="Type the word to win" maxlength="20" aria-label="Guess the secret word">
+          <button class="btn btn-primary mt8" onclick="submitSpyGuess()" aria-label="Submit your guess">Submit</button>
         </div>
       </div>
     </div>
@@ -824,7 +859,7 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
   <div class="muted" id="vote-turn-label">Vote as the current player</div>
   <div class="muted" id="vote-message" style="margin-top:8px; min-height:24px"></div>
   <div class="vote-grid" id="vote-grid"></div>
-  <button class="btn btn-secondary mt8" id="revote-btn" style="display:none; max-width:260px" onclick="startRevote()">Revote</button>
+  <button class="btn btn-secondary mt8" id="revote-btn" style="display:none; max-width:260px" onclick="startRevote()" aria-label="Start a revote round">Revote</button>
   <p class="muted" style="font-size:0.75rem; margin-top:12px;">Tap a player to vote them out</p>
 </div>
 
@@ -880,9 +915,9 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
       <div class="settings-sub">Minutes for discussion phase</div>
     </div>
     <div class="stepper">
-      <button class="stepper-btn" onclick="adjustSetting('timerMins',-1)">−</button>
+      <button class="stepper-btn" onclick="adjustSetting('timerMins',-1)" aria-label="Decrease discussion timer">-</button>
       <span class="stepper-val" id="setting-timerMins">2</span>
-      <button class="stepper-btn" onclick="adjustSetting('timerMins',1)">+</button>
+      <button class="stepper-btn" onclick="adjustSetting('timerMins',1)" aria-label="Increase discussion timer">+</button>
     </div>
   </div>
   <div class="settings-row">
@@ -891,9 +926,9 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
       <div class="settings-sub">Votes before result shows</div>
     </div>
     <div class="stepper">
-      <button class="stepper-btn" onclick="adjustSetting('votingRounds',-1)">−</button>
+      <button class="stepper-btn" onclick="adjustSetting('votingRounds',-1)" aria-label="Decrease voting rounds">-</button>
       <span class="stepper-val" id="setting-votingRounds">1</span>
-      <button class="stepper-btn" onclick="adjustSetting('votingRounds',1)">+</button>
+      <button class="stepper-btn" onclick="adjustSetting('votingRounds',1)" aria-label="Increase voting rounds">+</button>
     </div>
   </div>
   <div class="settings-row">
@@ -901,7 +936,7 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
       <div class="settings-label">Show Category Hint</div>
       <div class="settings-sub">Impostors see word category</div>
     </div>
-    <div class="toggle on" id="toggle-showHint" onclick="toggleSetting('showHint')">
+    <div class="toggle on" id="toggle-showHint" onclick="toggleSetting('showHint')" aria-label="Toggle category hint for impostors" role="button">
       <div class="toggle-knob"></div>
     </div>
   </div>
@@ -910,7 +945,7 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
       <div class="settings-label">Vibration</div>
       <div class="settings-sub">Haptic feedback on reveal</div>
     </div>
-    <div class="toggle on" id="toggle-vibration" onclick="toggleSetting('vibration')">
+    <div class="toggle on" id="toggle-vibration" onclick="toggleSetting('vibration')" aria-label="Toggle haptic feedback" role="button">
       <div class="toggle-knob"></div>
     </div>
   </div>
@@ -919,7 +954,7 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
       <div class="settings-label">Theme</div>
       <div class="settings-sub">Light / dark mode</div>
     </div>
-    <div class="toggle" id="toggle-theme" onclick="toggleTheme()">
+    <div class="toggle" id="toggle-theme" onclick="toggleTheme()" aria-label="Toggle light/dark theme" role="button">
       <div class="toggle-knob"></div>
     </div>
   </div>
@@ -928,14 +963,14 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
       <div class="settings-label">Accent</div>
       <div class="settings-sub">Cycle the highlight color</div>
     </div>
-    <button class="btn btn-secondary" onclick="cycleAccent()" style="width:auto;padding:10px 14px;">Accent</button>
+    <button class="btn btn-secondary" onclick="cycleAccent()" style="width:auto;padding:10px 14px;" aria-label="Cycle accent color">Accent</button>
   </div>
   <div class="settings-row">
     <div>
       <div class="settings-label">Sound Effects</div>
       <div class="settings-sub">Play reveal, vote, and result audio</div>
     </div>
-    <div class="toggle on" id="toggle-sound" onclick="toggleSetting('sound')">
+    <div class="toggle on" id="toggle-sound" onclick="toggleSetting('sound')" aria-label="Toggle sound effects" role="button">
       <div class="toggle-knob"></div>
     </div>
   </div>
