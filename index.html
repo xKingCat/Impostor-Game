@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- iOS PWA Support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Undercover">
+
+<!-- App Icon -->
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Undercover — Party Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080b14;
+  --surface: #0f1624;
+  --surface2: #151d2e;
+  --border: rgba(255,255,255,0.07);
+  --accent: #e8ff5a;
+  --accent2: #ff5a7e;
+  --accent3: #5affda;
+  --text: #f0f4ff;
+  --muted: #5a6a8a;
+  --impostor: #ff3d6b;
+  --safe: #3dffa0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Ambient background */
+.bg-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+.orb1 { width: 400px; height: 400px; background: rgba(232,255,90,0.04); top: -100px; right: -100px; }
+.orb2 { width: 300px; height: 300px; background: rgba(255,90,126,0.05); bottom: -50px; left: -50px; }
+.orb3 { width: 200px; height: 200px; background: rgba(90,255,218,0.04); top: 50%; left: 50%; transform: translate(-50%,-50%); }
+
+/* SCREENS */
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 10;
+  opacity: 0;
+  transform: translateY(20px) scale(0.98);
+  pointer-events: none;
+  transition: opacity 0.4s cubic-bezier(0.4,0,0.2,1), transform 0.4s cubic-bezier(0.4,0,0.2,1);
+  will-change: opacity, transform;
+}
+.screen.active {
+  opacity: 1;
+  transform: none;
+  pointer-events: all;
+}
+.screen.exit {
+  opacity: 0;
+  transform: translateY(-20px) scale(1.02);
+  pointer-events: none;
+}
+
+/* TYPOGRAPHY */
+h1 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(2rem, 8vw, 3.5rem);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+h2 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.4rem, 5vw, 2rem);
+  letter-spacing: -0.02em;
+}
+h3 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+}
+
+/* LOGO */
+.logo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  color: #080b14;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 100px;
+  margin-bottom: 20px;
+}
+
+/* PILL TAG */
+.pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.pill-green { background: rgba(61,255,160,0.12); color: var(--safe); border: 1px solid rgba(61,255,160,0.2); }
+.pill-red { background: rgba(255,61,107,0.12); color: var(--impostor); border: 1px solid rgba(255,61,107,0.2); }
+.pill-yellow { background: rgba(232,255,90,0.12); color: var(--accent); border: 1px solid rgba(232,255,90,0.2); }
+
+/* INPUTS */
+.input-group {
+  width: 100%;
+  max-width: 360px;
+  margin-bottom: 12px;
+}
+.input-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: block;
+}
+input[type="text"], textarea {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+input[type="text"]:focus, textarea:focus { border-color: rgba(232,255,90,0.4); }
+textarea { resize: none; height: 80px; }
+
+/* BUTTONS */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 15px 28px;
+  border-radius: 14px;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.15s, box-shadow 0.2s;
+  -webkit-appearance: none;
+}
+.btn:active { transform: scale(0.96); }
+.btn-primary {
+  background: var(--accent);
+  color: #080b14;
+  font-weight: 700;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 0 30px rgba(232,255,90,0.15);
+}
+.btn-primary:hover { box-shadow: 0 0 40px rgba(232,255,90,0.25); }
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  width: 100%;
+  max-width: 360px;
+}
+.btn-danger {
+  background: rgba(255,61,107,0.15);
+  color: var(--impostor);
+  border: 1px solid rgba(255,61,107,0.3);
+  width: 100%;
+  max-width: 360px;
+}
+
+/* GAME MODES */
+.mode-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  max-width: 360px;
+  margin-bottom: 16px;
+}
+.mode-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 12px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  text-align: left;
+}
+.mode-card.selected {
+  border-color: var(--accent);
+  background: rgba(232,255,90,0.06);
+}
+.mode-icon { font-size: 1.4rem; margin-bottom: 6px; display: block; }
+.mode-name { font-size: 0.8rem; font-weight: 700; font-family: 'Syne', sans-serif; display: block; }
+.mode-desc { font-size: 0.68rem; color: var(--muted); margin-top: 2px; display: block; }
+
+/* PLAYER LIST in setup */
+.player-list-setup {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.player-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+}
+.player-chip-remove {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0;
+  transition: color 0.2s;
+}
+.player-chip-remove:hover { color: var(--impostor); }
+.add-player-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 360px;
+  margin-bottom: 14px;
+}
+.add-player-row input { flex: 1; }
+.btn-add {
+  padding: 14px 20px;
+  border-radius: 14px;
+  border: none;
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 1.2rem;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: transform 0.15s;
+  flex-shrink: 0;
+}
+.btn-add:active { transform: scale(0.93); }
+
+/* PASS SCREEN */
+.pass-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  margin-bottom: 18px;
+  border: 2px solid rgba(232,255,90,0.2);
+}
+.progress-dots {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--surface2);
+  transition: background 0.3s, transform 0.3s;
+}
+.dot.done { background: var(--accent); }
+.dot.current { background: var(--accent); transform: scale(1.4); }
+
+/* CARD FLIP */
+.card-scene {
+  width: 260px;
+  height: 340px;
+  perspective: 1000px;
+  margin: 20px 0;
+  cursor: pointer;
+}
+.card-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.65s cubic-bezier(0.4, 0.2, 0.2, 1);
+}
+.card-scene.flipped .card-inner { transform: rotateY(180deg); }
+.card-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+}
+.card-front {
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.card-front-pattern {
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  overflow: hidden;
+  opacity: 0.4;
+}
+.card-front-pattern svg { width: 100%; height: 100%; }
+.card-back {
+  transform: rotateY(180deg);
+  border: 2px solid;
+}
+.card-back.role-safe {
+  background: radial-gradient(circle at 30% 20%, rgba(61,255,160,0.12), var(--surface) 60%);
+  border-color: rgba(61,255,160,0.3);
+  box-shadow: 0 0 60px rgba(61,255,160,0.1), inset 0 0 40px rgba(61,255,160,0.05);
+}
+.card-back.role-impostor {
+  background: radial-gradient(circle at 30% 20%, rgba(255,61,107,0.15), var(--surface) 60%);
+  border-color: rgba(255,61,107,0.4);
+  box-shadow: 0 0 60px rgba(255,61,107,0.15), inset 0 0 40px rgba(255,61,107,0.08);
+}
+.role-emoji { font-size: 3rem; margin-bottom: 12px; }
+.role-label { font-size: 0.7rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+.role-word { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.8rem; letter-spacing: -0.02em; }
+.role-hint { font-size: 0.8rem; color: var(--muted); margin-top: 8px; }
+.tap-hint {
+  font-size: 0.75rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
+
+/* VOTING */
+.vote-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  max-width: 360px;
+  margin: 16px 0;
+}
+.vote-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 12px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.vote-card:active { transform: scale(0.96); }
+.vote-card.voted {
+  border-color: var(--accent);
+  background: rgba(232,255,90,0.06);
+  pointer-events: none;
+}
+.vote-card.eliminated {
+  border-color: rgba(255,61,107,0.4);
+  background: rgba(255,61,107,0.08);
+}
+.vote-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem; }
+.vote-count {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: 'Syne', sans-serif;
+}
+.vote-bar-wrap {
+  width: 100%;
+  height: 3px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.vote-bar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+  width: 0%;
+}
+.vote-avatar { font-size: 1.6rem; }
+.vote-status {
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.votes-remaining {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+/* RESULT */
+.result-icon { font-size: 4rem; margin-bottom: 16px; animation: bounceIn 0.5s cubic-bezier(0.36,0.07,0.19,0.97); }
+@keyframes bounceIn {
+  0%{transform:scale(0.3);opacity:0}
+  50%{transform:scale(1.1)}
+  70%{transform:scale(0.95)}
+  100%{transform:scale(1);opacity:1}
+}
+.result-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px;
+  width: 100%;
+  max-width: 360px;
+  margin: 16px 0;
+}
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+.result-row:last-child { border-bottom: none; }
+.result-key { color: var(--muted); }
+.result-val { font-weight: 500; }
+
+/* SCOREBOARD */
+.score-list {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 14px 0;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.score-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+.score-rank { font-size: 0.75rem; color: var(--muted); width: 24px; }
+.score-name { font-weight: 500; flex: 1; }
+.score-pts { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent); }
+
+/* TIMER BAR */
+.timer-bar-wrap {
+  width: 100%;
+  max-width: 360px;
+  height: 4px;
+  background: var(--surface2);
+  border-radius: 2px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.timer-bar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 1s linear, background 0.5s;
+}
+.timer-bar.urgent { background: var(--impostor); }
+.timer-text {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.timer-text.urgent { color: var(--impostor); }
+
+/* SETTINGS PANEL */
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 360px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.settings-label { font-size: 0.9rem; }
+.settings-sub { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+.toggle {
+  width: 44px;
+  height: 26px;
+  background: var(--surface2);
+  border-radius: 13px;
+  position: relative;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: background 0.3s;
+  flex-shrink: 0;
+}
+.toggle.on { background: var(--accent); border-color: var(--accent); }
+.toggle-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.toggle.on .toggle-knob { transform: translateX(18px); background: #080b14; }
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.stepper-val { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; min-width: 24px; text-align: center; }
+.stepper-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s;
+}
+.stepper-btn:active { transform: scale(0.9); }
+
+/* ROUND INDICATOR */
+.round-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+.round-badge strong { color: var(--text); font-family: 'Syne', sans-serif; }
+
+/* CONFETTI (CSS only) */
+.confetti-piece {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  top: -20px;
+  animation: confettiFall linear forwards;
+  z-index: 100;
+  pointer-events: none;
+  border-radius: 2px;
+}
+@keyframes confettiFall {
+  to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+/* NAV */
+.nav-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 20px;
+}
+.nav-tab {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 9px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.nav-tab.active { background: var(--surface2); color: var(--text); }
+
+/* UTILS */
+.w-full { width: 100%; max-width: 360px; }
+.mt8 { margin-top: 8px; }
+.mt16 { margin-top: 16px; }
+.muted { color: var(--muted); font-size: 0.85rem; }
+.text-center { text-align: center; }
+.flex-col { display: flex; flex-direction: column; align-items: center; }
+.gap8 { gap: 8px; }
+.divider {
+  width: 100%;
+  max-width: 360px;
+  height: 1px;
+  background: var(--border);
+  margin: 12px 0;
+}
+.scroll-content {
+  width: 100%;
+  max-width: 360px;
+  overflow-y: auto;
+  max-height: calc(100dvh - 200px);
+  padding-bottom: 20px;
+}
+
+/* Shimmer on card back reveal */
+@keyframes shimmer {
+  0% { opacity: 0; transform: translateX(-100%); }
+  100% { opacity: 0; transform: translateX(100%); }
+}
+
+</style>
+</head>
+<body>
+
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+<div class="bg-orb orb3"></div>
+
+<!-- ============ SCREEN: HOME ============ -->
+<div id="screen-home" class="screen active">
+  <div class="logo-badge">🕵️ Undercover</div>
+  <h1>Party<br>Game</h1>
+  <p class="muted mt8" style="margin-bottom:32px;">Find the impostor before time runs out</p>
+  <button class="btn btn-primary" onclick="nav('screen-setup')">New Game</button>
+  <button class="btn btn-secondary mt8" onclick="nav('screen-scores')">🏆 Scores</button>
+  <button class="btn btn-secondary mt8" onclick="nav('screen-settings')">⚙️ Settings</button>
+  <p class="muted" style="margin-top:24px;font-size:0.72rem">3–12 players · works offline</p>
+</div>
+
+<!-- ============ SCREEN: SETUP ============ -->
+<div id="screen-setup" class="screen">
+  <div style="width:100%;max-width:360px;display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+    <button class="btn-add" onclick="nav('screen-home')" style="padding:10px 14px;font-size:0.9rem;">←</button>
+    <h2 style="flex:1">Players</h2>
+    <span class="pill pill-yellow" id="player-count-badge">0 players</span>
+  </div>
+
+  <div class="player-list-setup" id="player-list"></div>
+
+  <div class="add-player-row">
+    <input type="text" id="new-player-input" placeholder="Player name…" maxlength="18"
+      onkeydown="if(event.key==='Enter')addPlayer()">
+    <button class="btn-add" onclick="addPlayer()">+</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <p style="font-size:0.75rem;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:10px;align-self:flex-start">Game Mode</p>
+  <div class="mode-grid">
+    <div class="mode-card selected" onclick="selectMode('classic',this)">
+      <span class="mode-icon">🎯</span>
+      <span class="mode-name">Classic</span>
+      <span class="mode-desc">One impostor, one word</span>
+    </div>
+    <div class="mode-card" onclick="selectMode('double',this)">
+      <span class="mode-icon">👥</span>
+      <span class="mode-name">Double Agent</span>
+      <span class="mode-desc">Two impostors</span>
+    </div>
+    <div class="mode-card" onclick="selectMode('nohint',this)">
+      <span class="mode-icon">🤐</span>
+      <span class="mode-name">No Hint</span>
+      <span class="mode-desc">No category clue</span>
+    </div>
+    <div class="mode-card" onclick="selectMode('spy',this)">
+      <span class="mode-icon">🔍</span>
+      <span class="mode-name">Spy Mode</span>
+      <span class="mode-desc">Impostor knows the word too</span>
+    </div>
+  </div>
+
+  <button class="btn btn-primary mt16" onclick="beginGame()">Start Game →</button>
+</div>
+
+<!-- ============ SCREEN: PASS DEVICE ============ -->
+<div id="screen-pass" class="screen">
+  <div class="progress-dots" id="pass-dots"></div>
+  <div class="pass-avatar" id="pass-avatar" style="background:var(--surface)"></div>
+  <h2 id="pass-name">Player</h2>
+  <p class="muted mt8" style="margin-bottom:24px;">Pass the device to this player</p>
+  <button class="btn btn-primary" onclick="nav('screen-reveal')">I have it →</button>
+</div>
+
+<!-- ============ SCREEN: REVEAL ============ -->
+<div id="screen-reveal" class="screen">
+  <div class="round-badge">
+    <span>Round <strong id="reveal-round">1</strong></span>
+    <span>·</span>
+    <span id="reveal-mode-label" class="pill pill-yellow"></span>
+  </div>
+  <p class="muted" style="margin-bottom:4px" id="reveal-for-label">For <strong>…</strong></p>
+  <div class="card-scene" id="flip-card" onclick="flipRevealCard()">
+    <div class="card-inner" id="card-inner">
+      <div class="card-face card-front">
+        <div class="card-front-pattern">
+          <svg viewBox="0 0 260 340" xmlns="http://www.w3.org/2000/svg">
+            <defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+            </pattern></defs>
+            <rect width="260" height="340" fill="url(#grid)"/>
+          </svg>
+        </div>
+        <div style="font-size:3rem;margin-bottom:12px">🃏</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem">Tap to reveal</div>
+        <div class="tap-hint mt8">👆 tap the card</div>
+      </div>
+      <div class="card-face card-back" id="card-back-face">
+        <div class="role-emoji" id="reveal-emoji">🕵️</div>
+        <div class="role-label" id="reveal-role-label">IMPOSTOR</div>
+        <div class="role-word" id="reveal-word">—</div>
+        <div class="role-hint" id="reveal-hint"></div>
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-secondary" id="reveal-next-btn" onclick="nextReveal()" style="max-width:260px">
+    Next Player →
+  </button>
+</div>
+
+<!-- ============ SCREEN: DISCUSSION ============ -->
+<div id="screen-discuss" class="screen">
+  <div class="round-badge">Round <strong id="discuss-round">1</strong> · Discussion</div>
+  <h2 style="margin-bottom:8px">Discuss!</h2>
+  <p class="muted" style="margin-bottom:16px">Talk it out. Find the impostor.</p>
+  <div class="timer-bar-wrap w-full">
+    <div class="timer-bar" id="timer-bar" style="width:100%"></div>
+  </div>
+  <div class="timer-text" id="timer-text">2:00</div>
+  <div class="w-full" style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px;margin-bottom:20px">
+    <p style="font-size:0.75rem;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:12px">Tips</p>
+    <p style="font-size:0.88rem;line-height:1.6;color:var(--text)">Ask players to describe the word with one clue. Watch for vague or off-topic answers. Impostors only know the <em>category</em>.</p>
+  </div>
+  <button class="btn btn-primary" onclick="startVoting()">Start Voting</button>
+  <button class="btn btn-secondary mt8" onclick="resetTimer()">↺ Reset Timer</button>
+</div>
+
+<!-- ============ SCREEN: VOTING ============ -->
+<div id="screen-vote" class="screen">
+  <div class="round-badge">Round <strong id="vote-round">1</strong> · Voting</div>
+  <h2 style="margin-bottom:6px">Cast Your Vote</h2>
+  <p class="votes-remaining" id="votes-remaining">0 of 0 voted</p>
+  <div class="vote-grid" id="vote-grid"></div>
+  <p class="muted" style="font-size:0.75rem">Tap a player to vote them out</p>
+</div>
+
+<!-- ============ SCREEN: RESULT ============ -->
+<div id="screen-result" class="screen">
+  <div class="result-icon" id="result-icon">🎉</div>
+  <h2 id="result-title">Team wins!</h2>
+  <p class="muted mt8" id="result-sub">The impostor was caught</p>
+
+  <div class="result-card">
+    <div class="result-row">
+      <span class="result-key">Impostor</span>
+      <span class="result-val" id="res-impostor">—</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">Word</span>
+      <span class="result-val" id="res-word">—</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">Mode</span>
+      <span class="result-val" id="res-mode">—</span>
+    </div>
+    <div class="result-row">
+      <span class="result-key">Voted out</span>
+      <span class="result-val" id="res-voted">—</span>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" onclick="playAgain()">Play Again</button>
+  <button class="btn btn-secondary mt8" onclick="nav('screen-home')">🏠 Home</button>
+</div>
+
+<!-- ============ SCREEN: SCORES ============ -->
+<div id="screen-scores" class="screen">
+  <div style="width:100%;max-width:360px;display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+    <button class="btn-add" onclick="nav('screen-home')" style="padding:10px 14px;font-size:0.9rem;">←</button>
+    <h2 style="flex:1">Scoreboard</h2>
+  </div>
+  <div class="score-list" id="score-list"></div>
+  <button class="btn btn-danger" onclick="clearScores()" style="margin-top:12px">Clear Scores</button>
+  <p class="muted mt8" style="font-size:0.72rem">Scores saved per session</p>
+</div>
+
+<!-- ============ SCREEN: SETTINGS ============ -->
+<div id="screen-settings" class="screen">
+  <div style="width:100%;max-width:360px;display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+    <button class="btn-add" onclick="nav('screen-home')" style="padding:10px 14px;font-size:0.9rem;">←</button>
+    <h2>Settings</h2>
+  </div>
+  <div class="settings-row">
+    <div>
+      <div class="settings-label">Discussion Timer</div>
+      <div class="settings-sub">Minutes for discussion phase</div>
+    </div>
+    <div class="stepper">
+      <button class="stepper-btn" onclick="adjustSetting('timerMins',-1)">−</button>
+      <span class="stepper-val" id="setting-timerMins">2</span>
+      <button class="stepper-btn" onclick="adjustSetting('timerMins',1)">+</button>
+    </div>
+  </div>
+  <div class="settings-row">
+    <div>
+      <div class="settings-label">Voting Rounds</div>
+      <div class="settings-sub">Votes before result shows</div>
+    </div>
+    <div class="stepper">
+      <button class="stepper-btn" onclick="adjustSetting('votingRounds',-1)">−</button>
+      <span class="stepper-val" id="setting-votingRounds">1</span>
+      <button class="stepper-btn" onclick="adjustSetting('votingRounds',1)">+</button>
+    </div>
+  </div>
+  <div class="settings-row">
+    <div>
+      <div class="settings-label">Show Category Hint</div>
+      <div class="settings-sub">Impostors see word category</div>
+    </div>
+    <div class="toggle on" id="toggle-showHint" onclick="toggleSetting('showHint')">
+      <div class="toggle-knob"></div>
+    </div>
+  </div>
+  <div class="settings-row">
+    <div>
+      <div class="settings-label">Vibration</div>
+      <div class="settings-sub">Haptic feedback on reveal</div>
+    </div>
+    <div class="toggle on" id="toggle-vibration" onclick="toggleSetting('vibration')">
+      <div class="toggle-knob"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ─────────────────────────────────────────────────────────────────
+const WORDS = [
+  {word:"Pizza",hint:"Food"},
+  {word:"Hospital",hint:"Place"},
+  {word:"Football",hint:"Sport"},
+  {word:"Teacher",hint:"Job"},
+  {word:"Phone",hint:"Tech"},
+  {word:"Mountain",hint:"Nature"},
+  {word:"Guitar",hint:"Music"},
+  {word:"Passport",hint:"Travel"},
+  {word:"Submarine",hint:"Vehicle"},
+  {word:"Dentist",hint:"Job"},
+  {word:"Cinema",hint:"Place"},
+  {word:"Bitcoin",hint:"Finance"},
+  {word:"Yoga",hint:"Fitness"},
+  {word:"Sushi",hint:"Food"},
+  {word:"Library",hint:"Place"},
+  {word:"Helicopter",hint:"Vehicle"},
+  {word:"Volcano",hint:"Nature"},
+  {word:"Piano",hint:"Music"},
+  {word:"Visa",hint:"Travel"},
+  {word:"Surgeon",hint:"Job"},
+  {word:"Basketball",hint:"Sport"},
+  {word:"Museum",hint:"Place"},
+  {word:"Headphones",hint:"Tech"},
+  {word:"Avocado",hint:"Food"},
+  {word:"Skateboard",hint:"Sport"},
+  {word:"Bonfire",hint:"Nature"},
+  {word:"Trumpet",hint:"Music"},
+  {word:"Backpack",hint:"Travel"},
+  {word:"Architect",hint:"Job"},
+  {word:"Microwave",hint:"Tech"},
+];
+
+const AVATARS = ["🐺","🦊","🐻","🐼","🦁","🐯","🐨","🦅","🦋","🐙","🦄","🐸"];
+const MODE_NAMES = { classic:"Classic", double:"Double Agent", nohint:"No Hint", spy:"Spy Mode" };
+
+let state = {
+  players: [],
+  mode: "classic",
+  round: 1,
+  currentPlayerIndex: 0,
+  impostors: [],
+  wordSet: null,
+  cardFlipped: false,
+  votes: {},        // playerIndex → count
+  playerVoted: [],  // who has voted (index of voter)
+  scores: {},       // playerName → points
+  settings: {
+    timerMins: 2,
+    votingRounds: 1,
+    showHint: true,
+    vibration: true,
+  },
+  timerInterval: null,
+  timerRemaining: 120,
+};
+
+// ─── NAVIGATION ─────────────────────────────────────────────────────────────
+function nav(screenId) {
+  document.querySelectorAll('.screen').forEach(s => {
+    if (s.id !== screenId) {
+      s.classList.remove('active');
+    }
+  });
+  const next = document.getElementById(screenId);
+  next.classList.add('active');
+}
+
+// ─── SETUP ──────────────────────────────────────────────────────────────────
+function addPlayer() {
+  const input = document.getElementById('new-player-input');
+  const name = input.value.trim();
+  if (!name || state.players.length >= 12) { input.value=''; return; }
+  if (state.players.includes(name)) { input.value=''; return; }
+  state.players.push(name);
+  input.value = '';
+  renderPlayerList();
+  input.focus();
+}
+
+function removePlayer(i) {
+  state.players.splice(i, 1);
+  renderPlayerList();
+}
+
+function renderPlayerList() {
+  const list = document.getElementById('player-list');
+  const badge = document.getElementById('player-count-badge');
+  badge.textContent = state.players.length + ' player' + (state.players.length !== 1 ? 's' : '');
+  list.innerHTML = state.players.map((p, i) =>
+    `<div class="player-chip">
+      <span>${AVATARS[i % AVATARS.length]} ${p}</span>
+      <button class="player-chip-remove" onclick="removePlayer(${i})">✕</button>
+    </div>`
+  ).join('');
+}
+
+function selectMode(mode, el) {
+  state.mode = mode;
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function beginGame() {
+  if (state.players.length < 3) {
+    alert('Add at least 3 players to start!');
+    return;
+  }
+  // Pick word
+  state.wordSet = WORDS[Math.floor(Math.random() * WORDS.length)];
+  // Pick impostor(s)
+  const count = state.mode === 'double' ? Math.min(2, Math.floor(state.players.length / 3)) : 1;
+  state.impostors = [];
+  const pool = [...Array(state.players.length).keys()];
+  for (let i = 0; i < count; i++) {
+    const idx = Math.floor(Math.random() * pool.length);
+    state.impostors.push(pool.splice(idx, 1)[0]);
+  }
+  state.currentPlayerIndex = 0;
+  state.round++;
+  state.votes = {};
+  state.playerVoted = [];
+  state.cardFlipped = false;
+  setupPassScreen();
+}
+
+// ─── PASS SCREEN ─────────────────────────────────────────────────────────────
+function setupPassScreen() {
+  const p = state.players[state.currentPlayerIndex];
+  document.getElementById('pass-name').textContent = p;
+  const av = document.getElementById('pass-avatar');
+  av.textContent = AVATARS[state.currentPlayerIndex % AVATARS.length];
+
+  // Dots
+  const dots = document.getElementById('pass-dots');
+  dots.innerHTML = state.players.map((_, i) => {
+    let cls = 'dot';
+    if (i < state.currentPlayerIndex) cls += ' done';
+    if (i === state.currentPlayerIndex) cls += ' current';
+    return `<div class="${cls}"></div>`;
+  }).join('');
+
+  nav('screen-pass');
+}
+
+// ─── REVEAL SCREEN ──────────────────────────────────────────────────────────
+document.getElementById('screen-pass').querySelector('.btn').addEventListener('click', function(){});
+
+function goReveal() { /* handled by onclick on button in HTML */ }
+
+// Called when user taps "I have it"
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelector('#screen-pass .btn').onclick = () => {
+    prepareReveal();
+    nav('screen-reveal');
+  };
+});
+
+function prepareReveal() {
+  const i = state.currentPlayerIndex;
+  const isImpostor = state.impostors.includes(i);
+  const p = state.players[i];
+
+  // Reset card
+  state.cardFlipped = false;
+  const card = document.getElementById('flip-card');
+  card.classList.remove('flipped');
+
+  document.getElementById('reveal-for-label').innerHTML = `For <strong>${p}</strong>`;
+  document.getElementById('reveal-round').textContent = state.round;
+  document.getElementById('reveal-mode-label').textContent = MODE_NAMES[state.mode];
+
+  // Pre-load back face content (hidden until flip)
+  const back = document.getElementById('card-back-face');
+  if (isImpostor) {
+    back.className = 'card-face card-back role-impostor';
+    document.getElementById('reveal-emoji').textContent = '🕵️';
+    document.getElementById('reveal-role-label').textContent = 'IMPOSTOR';
+    if (state.mode === 'spy') {
+      document.getElementById('reveal-word').textContent = state.wordSet.word;
+      document.getElementById('reveal-hint').textContent = '(You know the word too)';
+    } else {
+      document.getElementById('reveal-word').textContent = '';
+      document.getElementById('reveal-hint').textContent = state.settings.showHint && state.mode !== 'nohint'
+        ? 'Category: ' + state.wordSet.hint : 'No hints this round';
+    }
+  } else {
+    back.className = 'card-face card-back role-safe';
+    document.getElementById('reveal-emoji').textContent = '✅';
+    document.getElementById('reveal-role-label').textContent = 'CREWMATE';
+    document.getElementById('reveal-word').textContent = state.wordSet.word;
+    document.getElementById('reveal-hint').textContent = state.mode !== 'nohint' ? 'Category: ' + state.wordSet.hint : '';
+  }
+
+  // Last player? Change button label
+  const nextBtn = document.getElementById('reveal-next-btn');
+  if (state.currentPlayerIndex >= state.players.length - 1) {
+    nextBtn.textContent = 'Start Discussion →';
+  } else {
+    nextBtn.textContent = 'Next Player →';
+  }
+}
+
+function flipRevealCard() {
+  if (state.cardFlipped) return;
+  state.cardFlipped = true;
+  document.getElementById('flip-card').classList.add('flipped');
+  if (state.settings.vibration && navigator.vibrate) navigator.vibrate(30);
+}
+
+function nextReveal() {
+  if (!state.cardFlipped) {
+    alert('Tap the card first to see your role!');
+    return;
+  }
+  state.currentPlayerIndex++;
+  if (state.currentPlayerIndex >= state.players.length) {
+    startDiscussion();
+  } else {
+    setupPassScreen();
+  }
+}
+
+// ─── DISCUSSION ──────────────────────────────────────────────────────────────
+function startDiscussion() {
+  document.getElementById('discuss-round').textContent = state.round;
+  state.timerRemaining = state.settings.timerMins * 60;
+  renderTimerDisplay();
+  clearInterval(state.timerInterval);
+  state.timerInterval = setInterval(() => {
+    state.timerRemaining--;
+    renderTimerDisplay();
+    if (state.timerRemaining <= 0) {
+      clearInterval(state.timerInterval);
+      startVoting();
+    }
+  }, 1000);
+  nav('screen-discuss');
+}
+
+function renderTimerDisplay() {
+  const total = state.settings.timerMins * 60;
+  const pct = state.timerRemaining / total * 100;
+  const mins = Math.floor(state.timerRemaining / 60);
+  const secs = state.timerRemaining % 60;
+  const bar = document.getElementById('timer-bar');
+  const txt = document.getElementById('timer-text');
+  bar.style.width = pct + '%';
+  txt.textContent = `${mins}:${secs.toString().padStart(2,'0')}`;
+  const urgent = state.timerRemaining <= 30;
+  bar.classList.toggle('urgent', urgent);
+  txt.classList.toggle('urgent', urgent);
+}
+
+function resetTimer() {
+  state.timerRemaining = state.settings.timerMins * 60;
+  renderTimerDisplay();
+}
+
+// ─── VOTING ──────────────────────────────────────────────────────────────────
+function startVoting() {
+  clearInterval(state.timerInterval);
+  state.votes = {};
+  state.playerVoted = [];
+  document.getElementById('vote-round').textContent = state.round;
+  renderVoteGrid();
+  nav('screen-vote');
+}
+
+function renderVoteGrid() {
+  const grid = document.getElementById('vote-grid');
+  grid.innerHTML = state.players.map((p, i) => {
+    const count = state.votes[i] || 0;
+    const maxVotes = state.players.length;
+    const pct = maxVotes > 0 ? (count / maxVotes * 100) : 0;
+    return `<div class="vote-card" id="vcard-${i}" onclick="castVote(${i})">
+      <div class="vote-avatar">${AVATARS[i % AVATARS.length]}</div>
+      <div class="vote-name">${p}</div>
+      <div class="vote-count" id="vcount-${i}">${count}</div>
+      <div class="vote-bar-wrap"><div class="vote-bar" id="vbar-${i}" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+  updateVoteRemaining();
+}
+
+function castVote(targetIndex) {
+  // Each player gets one vote — we track by number of total votes cast
+  const totalVotesCast = Object.values(state.votes).reduce((a,b)=>a+b,0);
+  if (totalVotesCast >= state.players.length) return;
+
+  state.votes[targetIndex] = (state.votes[targetIndex] || 0) + 1;
+
+  // Animate that card
+  const card = document.getElementById('vcard-' + targetIndex);
+  if (state.settings.vibration && navigator.vibrate) navigator.vibrate(20);
+
+  // Update counts + bars
+  const maxVotes = Math.max(...Object.values(state.votes), 1);
+  state.players.forEach((_, i) => {
+    const c = state.votes[i] || 0;
+    document.getElementById('vcount-' + i).textContent = c;
+    document.getElementById('vbar-' + i).style.width = (c / state.players.length * 100) + '%';
+  });
+
+  updateVoteRemaining();
+
+  const totalNow = Object.values(state.votes).reduce((a,b)=>a+b,0);
+  if (totalNow >= state.players.length) {
+    setTimeout(finishVoting, 800);
+  }
+}
+
+function updateVoteRemaining() {
+  const cast = Object.values(state.votes).reduce((a,b)=>a+b,0);
+  document.getElementById('votes-remaining').textContent = `${cast} of ${state.players.length} voted`;
+}
+
+function finishVoting() {
+  // Find most voted player
+  let maxVotes = -1, votedOut = -1;
+  state.players.forEach((_, i) => {
+    if ((state.votes[i] || 0) > maxVotes) {
+      maxVotes = state.votes[i] || 0;
+      votedOut = i;
+    }
+  });
+
+  const impostorCaught = state.impostors.includes(votedOut);
+  const impostorNames = state.impostors.map(i => state.players[i]).join(' & ');
+
+  // Update scores
+  if (impostorCaught) {
+    // Crewmates win — everyone except impostors gets a point
+    state.players.forEach((p, i) => {
+      if (!state.impostors.includes(i)) {
+        state.scores[p] = (state.scores[p] || 0) + 1;
+      }
+    });
+  } else {
+    // Impostors win — they get 2 points each
+    state.impostors.forEach(i => {
+      const p = state.players[i];
+      state.scores[p] = (state.scores[p] || 0) + 2;
+    });
+  }
+
+  // Fill result screen
+  document.getElementById('result-icon').textContent = impostorCaught ? '🎉' : '😈';
+  document.getElementById('result-title').textContent = impostorCaught ? 'Crewmates Win!' : 'Impostors Win!';
+  document.getElementById('result-sub').textContent = impostorCaught
+    ? 'The impostor was caught!'
+    : 'The impostors slipped away...';
+  document.getElementById('res-impostor').textContent = impostorNames;
+  document.getElementById('res-word').textContent = state.wordSet.word;
+  document.getElementById('res-mode').textContent = MODE_NAMES[state.mode];
+  document.getElementById('res-voted').textContent = state.players[votedOut];
+
+  if (impostorCaught) spawnConfetti();
+  nav('screen-result');
+}
+
+// ─── CONFETTI ────────────────────────────────────────────────────────────────
+function spawnConfetti() {
+  const colors = ['#e8ff5a','#ff5a7e','#5affda','#ffffff','#ffaa5a'];
+  for (let i = 0; i < 50; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.background = colors[Math.floor(Math.random() * colors.length)];
+      el.style.transform = `rotate(${Math.random()*360}deg)`;
+      el.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+      el.style.animationDelay = (Math.random() * 0.5) + 's';
+      el.style.width = (6 + Math.random() * 8) + 'px';
+      el.style.height = (6 + Math.random() * 8) + 'px';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }, i * 30);
+  }
+}
+
+// ─── PLAY AGAIN ──────────────────────────────────────────────────────────────
+function playAgain() {
+  state.currentPlayerIndex = 0;
+  state.wordSet = WORDS[Math.floor(Math.random() * WORDS.length)];
+  const count = state.mode === 'double' ? Math.min(2, Math.floor(state.players.length / 3)) : 1;
+  state.impostors = [];
+  const pool = [...Array(state.players.length).keys()];
+  for (let i = 0; i < count; i++) {
+    const idx = Math.floor(Math.random() * pool.length);
+    state.impostors.push(pool.splice(idx, 1)[0]);
+  }
+  state.votes = {};
+  state.playerVoted = [];
+  state.cardFlipped = false;
+  setupPassScreen();
+}
+
+// ─── SCORES ──────────────────────────────────────────────────────────────────
+function renderScores() {
+  const list = document.getElementById('score-list');
+  const sorted = Object.entries(state.scores).sort((a,b)=>b[1]-a[1]);
+  if (sorted.length === 0) {
+    list.innerHTML = '<p class="muted text-center">No scores yet. Play a round!</p>';
+    return;
+  }
+  list.innerHTML = sorted.map(([name, pts], i) =>
+    `<div class="score-item">
+      <span class="score-rank">#${i+1}</span>
+      <span class="score-name">${AVATARS[i % AVATARS.length]} ${name}</span>
+      <span class="score-pts">${pts} pts</span>
+    </div>`
+  ).join('');
+}
+
+function clearScores() {
+  state.scores = {};
+  renderScores();
+}
+
+// ─── SETTINGS ────────────────────────────────────────────────────────────────
+function adjustSetting(key, delta) {
+  const limits = { timerMins: [1, 10], votingRounds: [1, 5] };
+  const [min, max] = limits[key];
+  state.settings[key] = Math.max(min, Math.min(max, state.settings[key] + delta));
+  document.getElementById('setting-' + key).textContent = state.settings[key];
+}
+
+function toggleSetting(key) {
+  state.settings[key] = !state.settings[key];
+  const el = document.getElementById('toggle-' + key);
+  el.classList.toggle('on', state.settings[key]);
+}
+
+// ─── HOOK SCREEN TRANSITIONS ─────────────────────────────────────────────────
+// Patch nav to also run screen-specific setup
+const _nav = nav;
+window.nav = function(screenId) {
+  if (screenId === 'screen-scores') renderScores();
+  _nav(screenId);
+};
+
+// Wire pass screen button (DOM ready)
+window.addEventListener('DOMContentLoaded', () => {
+  document.querySelector('#screen-pass .btn-primary').onclick = () => {
+    prepareReveal();
+    nav('screen-reveal');
+  };
+});
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
+}
+</script>
+</body>
+</html>
