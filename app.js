@@ -1,3 +1,69 @@
+const translations = {
+  en: {
+    title: "Impostor — Party Game",
+    settingsTitle: "Settings",
+    discussionTimer: "Discussion Timer",
+    discussionTimerSub: "Minutes for discussion phase",
+    votingRounds: "Voting Rounds",
+    votingRoundsSub: "Votes before result shows",
+    showCategoryHint: "Show Category Hint",
+    showCategoryHintSub: "Impostors see word category",
+    vibration: "Vibration",
+    vibrationSub: "Haptic feedback on reveal",
+    sound: "Sound Effects",
+    soundSub: "Play reveal, vote, and result audio",
+    theme: "Theme",
+    themeSub: "Light / dark mode",
+    accent: "Accent",
+    accentSub: "Cycle the highlight color",
+    language: "Language",
+    enterPlayerName: "Enter a player name before adding.",
+    maxPlayers: "Maximum 12 players allowed.",
+    duplicatePlayer: "This player name is already added.",
+    mode_classic: "Classic",
+    mode_double: "Double Agent",
+    mode_nohint: "No Hint",
+    mode_spy: "Spy Mode",
+    mode_quick: "Quick Round",
+    mode_noguess: "No Guess",
+    // Add more as needed
+  },
+  es: {
+    title: "Impostor — Juego de Fiesta",
+    settingsTitle: "Configuraciones",
+    discussionTimer: "Temporizador de Discusión",
+    discussionTimerSub: "Minutos para la fase de discusión",
+    votingRounds: "Rondas de Votación",
+    votingRoundsSub: "Votos antes de mostrar resultado",
+    showCategoryHint: "Mostrar Pista de Categoría",
+    showCategoryHintSub: "Los impostores ven la categoría de la palabra",
+    vibration: "Vibración",
+    vibrationSub: "Retroalimentación háptica al revelar",
+    sound: "Efectos de Sonido",
+    soundSub: "Reproducir audio de revelar, votar y resultado",
+    theme: "Tema",
+    themeSub: "Modo claro / oscuro",
+    accent: "Acento",
+    accentSub: "Cambiar el color de resaltado",
+    language: "Idioma",
+    enterPlayerName: "Ingresa un nombre de jugador antes de agregar.",
+    maxPlayers: "Máximo 12 jugadores permitidos.",
+    duplicatePlayer: "Este nombre de jugador ya está agregado.",
+    mode_classic: "Clásico",
+    mode_double: "Agente Doble",
+    mode_nohint: "Sin Pista",
+    mode_spy: "Modo Espía",
+    mode_quick: "Ronda Rápida",
+    mode_noguess: "Sin Adivinar",
+  }
+};
+
+let currentLang = 'en';
+
+function t(key) {
+  return translations[currentLang][key] || key;
+}
+
 const WORDS = [
   { word: "Pizza", hint: "Food" },
   { word: "Hospital", hint: "Place" },
@@ -19,6 +85,247 @@ const WORDS = [
   { word: "Piano", hint: "Music" },
   { word: "Visa", hint: "Travel" },
   { word: "Surgeon", hint: "Job" },
+  { word: "Sun", hint: "Star" },
+  { word: "Bicycle", hint: "Transport" },
+  { word: "Library", hint: "Building" },
+  { word: "Coffee", hint: "Drink" },
+  { word: "Whale", hint: "Mammal" },
+  { word: "Oxygen", hint: "Element" },
+  { word: "Violin", hint: "Instrument" },
+  { word: "Elephant", hint: "Animal" },
+  { word: "Mountain", hint: "Geography" },
+  { word: "Pencil", hint: "Stationery" },
+  { word: "Telescope", hint: "Tool" },
+  { word: "Sushi", hint: "Cuisine" },
+  { word: "Volcano", hint: "Nature" },
+  { word: "Guitar", hint: "Instrument" },
+  { word: "Mercury", hint: "Planet" },
+  { word: "Backpack", hint: "Accessory" },
+  { word: "Keyboard", hint: "Technology" },
+  { word: "Cactus", hint: "Plant" },
+  { word: "Bridge", hint: "Structure" },
+  { word: "Microscope", hint: "Science" },
+  { word: "Chocolate", hint: "Sweets" },
+  { word: "Forest", hint: "Ecosystem" },
+  { word: "Umbrella", hint: "Weather gear" },
+  { word: "Diamond", hint: "Gemstone" },
+  { word: "Satellite", hint: "Spacecraft" },
+  { word: "Kangaroo", hint: "Marsupial" },
+  { word: "Lighthouse", hint: "Beacon" },
+  { word: "Clock", hint: "Timepiece" },
+  { word: "Hammer", hint: "Hardware" },
+  { word: "Submarine", hint: "Vessel" },
+  { word: "Tornado", hint: "Storm" },
+  { word: "Camera", hint: "Electronics" },
+  { word: "Lion", hint: "Predator" },
+  { word: "Bread", hint: "Bakery" },
+  { word: "Dolphin", hint: "Aquatic" },
+  { word: "Compass", hint: "Navigation" },
+  { word: "Eagle", hint: "Bird" },
+  { word: "Rectangle", hint: "Shape" },
+  { word: "Laptop", hint: "Computer" },
+  { word: "Rose", hint: "Flower" },
+  { word: "Statue", hint: "Art" },
+  { word: "Desert", hint: "Biome" },
+  { word: "Juice", hint: "Beverage" },
+  { word: "Spaceship", hint: "Vehicle" },
+  { word: "Butterfly", hint: "Insect" },
+  { word: "Theater", hint: "Entertainment" },
+  { word: "Scarf", hint: "Clothing" },
+  { word: "Gold", hint: "Metal" },
+  { word: "Piano", hint: "Music" },
+  { word: "Oasis", hint: "Water source" },
+  { word: "Snowflake", hint: "Ice" },
+  { word: "Engine", hint: "Machine" },
+  { word: "Penguin", hint: "Flightless bird" },
+  { word: "Mirror", hint: "Reflective" },
+  { word: "Castle", hint: "Fortress" },
+  { word: "Apple", hint: "Fruit" },
+  { word: "Radio", hint: "Communication" },
+  { word: "Staircase", hint: "Architecture" },
+  { word: "Honey", hint: "Sweetener" },
+  { word: "Galaxy", hint: "Astronomy" },
+  { word: "Octopus", hint: "Cephalopod" },
+  { word: "Passport", hint: "Document" },
+  { word: "Candle", hint: "Light" },
+  { word: "Soccer", hint: "Sport" },
+  { word: "Map", hint: "Guide" },
+  { word: "Helmet", hint: "Protection" },
+  { word: "Clouds", hint: "Atmosphere" },
+  { word: "Battery", hint: "Energy" },
+  { word: "Ship", hint: "Transport" },
+  { word: "Calculator", hint: "Math" },
+  { word: "Wolf", hint: "Canine" },
+  { word: "Pyramid", hint: "Monument" },
+  { word: "Suitcase", hint: "Travel" },
+  { word: "Cheese", hint: "Dairy" },
+  { word: "Waterfall", hint: "Landmark" },
+  { word: "Magnet", hint: "Physics" },
+  { word: "Flashlight", hint: "Device" },
+  { word: "Rhinoceros", hint: "Wildlife" },
+  { word: "Bridge", hint: "Engineering" },
+  { word: "Soup", hint: "Meal" },
+  { word: "Trophy", hint: "Award" },
+  { word: "Window", hint: "Glass" },
+  { word: "Grapes", hint: "Fruit" },
+  { word: "Sword", hint: "Weapon" },
+  { word: "Island", hint: "Landmass" },
+  { word: "Microphone", hint: "Audio" },
+  { word: "Zebra", hint: "Striped animal" },
+  { word: "Tractor", hint: "Farming" },
+  { word: "Desk", hint: "Furniture" },
+  { word: "Sandwich", hint: "Food" },
+  { word: "Rocket", hint: "Aviation" },
+  { word: "Spider", hint: "Arachnid" },
+  { word: "Cereal", hint: "Breakfast" },
+  { word: "Wallet", hint: "Personal item" },
+  { word: "Drum", hint: "Percussion" },
+  { word: "Bridge", hint: "Path" },
+  { word: "Lemonade", hint: "Drink" },
+  { word: "Snail", hint: "Mollusk" },
+  { word: "Gloves", hint: "Apparel" },
+  { word: "Anchor", hint: "Nautical" },
+  { word: "Helicopter", hint: "Aircraft" },
+  { word: "Mushroom", hint: "Fungi" },
+  { word: "Passport", hint: "Identification" },
+  { word: "Giraffe", hint: "Tall animal" },
+  { word: "Bridge", hint: "Overpass" },
+  { word: "Taco", hint: "Mexican dish" },
+  { word: "Broom", hint: "Cleaning" },
+  { word: "Acorn", hint: "Seed" },
+  { word: "Parrot", hint: "Colorful bird" },
+  { word: "Kettle", hint: "Kitchenware" },
+  { word: "Icicle", hint: "Frozen water" },
+  { word: "Robot", hint: "Technology" },
+  { word: "Balloon", hint: "Party item" },
+  { word: "Soap", hint: "Hygiene" },
+  { word: "Museum", hint: "Culture" },
+  { word: "Telescope", hint: "Optics" },
+  { word: "Cucumber", hint: "Vegetable" },
+  { word: "Flute", hint: "Woodwind" },
+  { word: "Donkey", hint: "Equine" },
+  { word: "Stool", hint: "Seat" },
+  { word: "Blanket", hint: "Bedding" },
+  { word: "Comet", hint: "Space" },
+  { word: "Ladder", hint: "Climbing" },
+  { word: "Spoon", hint: "Cutlery" },
+  { word: "Bamboo", hint: "Grass" },
+  { word: "Wrench", hint: "Tool" },
+  { word: "Crocodile", hint: "Reptile" },
+  { word: "Button", hint: "Fastener" },
+  { word: "Map", hint: "Cartography" },
+  { word: "Steak", hint: "Meat" },
+  { word: "Owl", hint: "Nocturnal bird" },
+  { word: "Curtains", hint: "Drapery" },
+  { word: "Fountain", hint: "Water feature" },
+  { word: "Eraser", hint: "Office supply" },
+  { word: "Saddle", hint: "Equestrian" },
+  { word: "Beehive", hint: "Insect home" },
+  { word: "Fence", hint: "Boundary" },
+  { word: "Toaster", hint: "Appliance" },
+  { word: "Jellyfish", hint: "Marine life" },
+  { word: "Towel", hint: "Bathroom" },
+  { word: "Stadium", hint: "Arena" },
+  { word: "Whistle", hint: "Sound maker" },
+  { word: "Dragonfly", hint: "Insect" },
+  { word: "Pinecone", hint: "Conifer" },
+  { word: "Sailboat", hint: "Marine craft" },
+  { word: "Lamp", hint: "Lighting" },
+  { word: "Bridge", hint: "Viaduct" },
+  { word: "Harp", hint: "Instrument" },
+  { word: "Igloo", hint: "Ice house" },
+  { word: "Crayon", hint: "Art supply" },
+  { word: "Skateboard", hint: "Equipment" },
+  { word: "Peanut", hint: "Legume" },
+  { word: "Bridge", hint: "Connector" },
+  { word: "Koala", hint: "Marsupial" },
+  { word: "Calendar", hint: "Schedule" },
+  { word: "Pillow", hint: "Bedding" },
+  { word: "Squirrel", hint: "Rodent" },
+  { word: "Suitcase", hint: "Luggage" },
+  { word: "Pancakes", hint: "Breakfast" },
+  { word: "Ruler", hint: "Measurement" },
+  { word: "Lantern", hint: "Lamp" },
+  { word: "Walrus", hint: "Marine mammal" },
+  { word: "Pasta", hint: "Italian food" },
+  { word: "Tent", hint: "Camping" },
+  { word: "Bridge", hint: "Crossing" },
+  { word: "Glove", hint: "Handwear" },
+  { word: "Magnet", hint: "Attraction" },
+  { word: "Pear", hint: "Fruit" },
+  { word: "Flamingo", hint: "Pink bird" },
+  { word: "Pliers", hint: "Hardware" },
+  { word: "Mop", hint: "Cleaning tool" },
+  { word: "Cactus", hint: "Succulent" },
+  { word: "Feather", hint: "Bird part" },
+  { word: "Fork", hint: "Utensil" },
+  { word: "Lizard", hint: "Reptile" },
+  { word: "Boots", hint: "Footwear" },
+  { word: "Carpet", hint: "Flooring" },
+  { word: "Ostrich", hint: "Large bird" },
+  { word: "Screwdriver", hint: "Hand tool" },
+  { word: "Chandelier", hint: "Light fixture" },
+  { word: "Blueberry", hint: "Fruit" },
+  { word: "Seashell", hint: "Ocean object" },
+  { word: "Notebook", hint: "Stationery" },
+  { word: "Gondola", hint: "Boat" },
+  { word: "Canoe", hint: "Watercraft" },
+  { word: "Popsicle", hint: "Frozen treat" },
+  { word: "Tiger", hint: "Feline" },
+  { word: "Bridge", hint: "Overpass" },
+  { word: "Backpack", hint: "Bag" },
+  { word: "Daffodil", hint: "Flower" },
+  { word: "Swan", hint: "Water bird" },
+  { word: "Telescope", hint: "Observation" },
+  { word: "Mitten", hint: "Winter wear" },
+  { word: "Hammock", hint: "Bed" },
+  { word: "Pretzel", hint: "Snack" },
+  { word: "Cradle", hint: "Baby furniture" },
+  { word: "Goat", hint: "Livestock" },
+  { word: "Binoculars", hint: "Optics" },
+  { word: "Peach", hint: "Fruit" },
+  { word: "Scarecrow", hint: "Garden" },
+  { word: "Dolphin", hint: "Mammal" },
+  { word: "Violin", hint: "Strings" },
+  { word: "Lobster", hint: "Crustacean" },
+  { word: "Spatula", hint: "Kitchen tool" },
+  { word: "Cherry", hint: "Fruit" },
+  { word: "Compass", hint: "Direction" },
+  { word: "Vase", hint: "Container" },
+  { word: "Sledge", hint: "Snow transport" },
+  { word: "Bungalow", hint: "House type" },
+  { word: "Toucan", hint: "Tropical bird" },
+  { word: "Waffle", hint: "Food" },
+  { word: "Easel", hint: "Art equipment" },
+  { word: "Accordion", hint: "Instrument" },
+  { word: "Kettle", hint: "Appliance" },
+  { word: "Tractor", hint: "Vehicle" },
+  { word: "Acorn", hint: "Nut" },
+  { word: "Harmonica", hint: "Instrument" },
+  { word: "Blueberry", hint: "Berry" },
+  { word: "Cactus", hint: "Desert plant" },
+  { word: "Otter", hint: "River animal" },
+  { word: "Locket", hint: "Jewelry" },
+  { word: "Pineapple", hint: "Tropical fruit" },
+  { word: "Kite", hint: "Toy" },
+  { word: "Ladle", hint: "Serving tool" },
+  { word: "Hedgehog", hint: "Spiny mammal" },
+  { word: "Suitcase", hint: "Bag" },
+  { word: "Donut", hint: "Pastry" },
+  { word: "Banjo", hint: "Instrument" },
+  { word: "Pigeon", hint: "Bird" },
+  { word: "Yacht", hint: "Luxury boat" },
+  { word: "Strawberry", hint: "Fruit" },
+  { word: "Goggles", hint: "Eyewear" },
+  { word: "Beaver", hint: "Rodent" },
+  { word: "Clarinet", hint: "Instrument" },
+  { word: "Plunger", hint: "Tool" },
+  { word: "Mango", hint: "Fruit" },
+  { word: "Cricket", hint: "Insect" },
+  { word: "Bellows", hint: "Tool" },
+  { word: "Raccoon", hint: "Mammal" },
+  { word: "Chisel", hint: "Tool" },
+  { word: "Doughnut", hint: "Dessert" },
   { word: "Basketball", hint: "Sport" },
   { word: "Museum", hint: "Place" },
   { word: "Headphones", hint: "Tech" },
@@ -32,7 +339,14 @@ const WORDS = [
 ];
 
 const AVATARS = ["🐺", "🦊", "🐻", "🐼", "🦁", "🐯", "🐨", "🦅", "🦋", "🐙", "🦄", "🐸"];
-const MODE_NAMES = { classic: "Classic", double: "Double Agent", nohint: "No Hint", spy: "Spy Mode", quick: "Quick Round", noguess: "No Guess" };
+const MODE_NAMES = {
+  classic: t("mode_classic"),
+  double: t("mode_double"),
+  nohint: t("mode_nohint"),
+  spy: t("mode_spy"),
+  quick: t("mode_quick"),
+  noguess: t("mode_noguess")
+};
 const ACCENTS = [
   { accent: "#e8ff5a", accent2: "#ff5a7e", accent3: "#5affda" },
   { accent: "#7c3aed", accent2: "#ec4899", accent3: "#34d399" },
@@ -62,6 +376,7 @@ const state = {
     theme: "dark",
     accentIndex: 0,
     sound: true,
+    language: 'en',
   },
   timerInterval: null,
   timerRemaining: 120,
@@ -99,6 +414,14 @@ function playSound(type) {
 }
 
 function initApp() {
+  // Load settings from localStorage
+  const savedSettings = localStorage.getItem('impostor-settings');
+  if (savedSettings) {
+    state.settings = { ...state.settings, ...JSON.parse(savedSettings) };
+  }
+  currentLang = state.settings.language;
+  updateTranslations();
+  document.title = t('title');
   document.getElementById("pass-confirm-btn").onclick = () => {
     prepareReveal();
     nav("screen-reveal");
@@ -109,9 +432,31 @@ function initApp() {
   document.getElementById("toggle-sound").classList.toggle("on", state.settings.sound);
   document.getElementById("setting-timerMins").textContent = state.settings.timerMins;
   document.getElementById("setting-votingRounds").textContent = state.settings.votingRounds;
+  document.getElementById('language-select').value = state.settings.language;
+  document.getElementById('language-select').onchange = function() {
+    state.settings.language = this.value;
+    currentLang = this.value;
+    updateTranslations();
+    localStorage.setItem('impostor-settings', JSON.stringify(state.settings));
+  };
   applyTheme();
   applyAccent();
   renderPlayerList();
+}
+
+function updateTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
+  document.documentElement.lang = currentLang;
+  // Update MODE_NAMES
+  MODE_NAMES.classic = t("mode_classic");
+  MODE_NAMES.double = t("mode_double");
+  MODE_NAMES.nohint = t("mode_nohint");
+  MODE_NAMES.spy = t("mode_spy");
+  MODE_NAMES.quick = t("mode_quick");
+  MODE_NAMES.noguess = t("mode_noguess");
 }
 
 function nav(screenId) {
@@ -137,16 +482,16 @@ function addPlayer() {
   const input = document.getElementById("new-player-input");
   const name = normalizeName(input.value);
   if (!name) {
-    alert("Enter a player name before adding.");
+    alert(t("enterPlayerName"));
     return;
   }
   if (state.players.length >= 12) {
-    alert("Maximum 12 players allowed.");
+    alert(t("maxPlayers"));
     input.value = "";
     return;
   }
   if (state.players.some((player) => player.toLowerCase() === name.toLowerCase())) {
-    alert("This player name is already added.");
+    alert(t("duplicatePlayer"));
     input.value = "";
     return;
   }
@@ -564,17 +909,20 @@ function adjustSetting(key, delta) {
   if (key === "votingRounds" && state.settings[key] < state.voteRoundNumber) {
     state.voteRoundNumber = state.settings[key];
   }
+  localStorage.setItem('impostor-settings', JSON.stringify(state.settings));
 }
 
 function toggleSetting(key) {
   state.settings[key] = !state.settings[key];
   const el = document.getElementById(`toggle-${key}`);
   el.classList.toggle("on", state.settings[key]);
+  localStorage.setItem('impostor-settings', JSON.stringify(state.settings));
 }
 
 function toggleTheme() {
   state.settings.theme = state.settings.theme === "dark" ? "light" : "dark";
   applyTheme();
+  localStorage.setItem('impostor-settings', JSON.stringify(state.settings));
 }
 
 function applyTheme() {
@@ -585,6 +933,7 @@ function applyTheme() {
 function cycleAccent() {
   state.settings.accentIndex = (state.settings.accentIndex + 1) % ACCENTS.length;
   applyAccent();
+  localStorage.setItem('impostor-settings', JSON.stringify(state.settings));
 }
 
 function applyAccent() {
