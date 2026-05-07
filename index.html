@@ -54,7 +54,7 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100dvh;
-  overflow: hidden;
+  overflow: auto;
   position: relative;
 }
 
@@ -73,7 +73,10 @@ body {
 /* SCREENS */
 .screen {
   position: fixed;
-  inset: 0;
+  top: 60px;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -85,6 +88,7 @@ body {
   pointer-events: none;
   transition: opacity 0.4s cubic-bezier(0.4,0,0.2,1), transform 0.4s cubic-bezier(0.4,0,0.2,1);
   will-change: opacity, transform;
+  overflow-y: auto;
 }
 .screen.active {
   opacity: 1;
@@ -114,6 +118,8 @@ body {
   .screen { padding: 16px; }
   .btn, .mode-card, .vote-card, .player-chip { min-height: 44px; }
   .input-group input, textarea { min-height: 44px; }
+  .header { height: 50px; }
+  .screen { top: 50px; }
 }
 @media (orientation: landscape) and (max-height: 500px) {
   .screen { padding: 12px; }
@@ -270,6 +276,7 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
   text-align: left;
+  user-select: none;
 }
 .mode-card.selected {
   border-color: var(--accent);
@@ -366,6 +373,7 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
   perspective: 1000px;
   margin: 20px 0;
   cursor: pointer;
+  user-select: none;
 }
 .card-inner {
   width: 100%;
@@ -386,6 +394,7 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
   align-items: center;
   justify-content: center;
   padding: 28px;
+  user-select: none;
 }
 .card-front {
   background: var(--surface);
@@ -450,6 +459,7 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
   gap: 8px;
   position: relative;
   overflow: hidden;
+  user-select: none;
 }
 .vote-card:active { transform: scale(0.96); }
 .vote-card.has-votes {
@@ -809,7 +819,7 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
     <span id="reveal-mode-label" class="pill pill-yellow"></span>
   </div>
   <p class="muted" style="margin-bottom:4px" id="reveal-for-label">For <strong>…</strong></p>
-  <div class="card-scene" id="flip-card" onmousedown="holdCard()" onmouseup="releaseCard()" ontouchstart="holdCard()" ontouchend="releaseCard()">
+  <div class="card-scene" id="flip-card" role="button" tabindex="0" aria-label="Reveal your card" onmousedown="holdCard()" onmouseup="releaseCard()" onkeydown="if(event.key==='Enter'||event.key===' ') { event.preventDefault(); holdCard(); }" onkeyup="if(event.key==='Enter'||event.key===' ') { event.preventDefault(); releaseCard(); }" ontouchstart="holdCard()" ontouchend="releaseCard()">
     <div class="card-inner" id="card-inner">
       <div class="card-face card-front">
         <div class="card-front-pattern">
@@ -849,7 +859,7 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
   <div class="timer-bar-wrap w-full">
     <div class="timer-bar" id="timer-bar" style="width:100%"></div>
   </div>
-  <div class="timer-text" id="timer-text">2:00</div>
+  <div class="timer-text" id="timer-text" aria-live="polite">2:00</div>
   <div class="w-full" style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px;margin-bottom:20px">
     <p style="font-size:0.75rem;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:12px">Tips</p>
     <p style="font-size:0.88rem;line-height:1.6;color:var(--text)">Ask players to describe the word with one clue. Watch for vague or off-topic answers. Impostors only know the <em>category</em>.</p>
@@ -864,9 +874,9 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
   <div class="round-badge">Round <strong id="vote-round">1</strong> · Voting</div>
   <h2 style="margin-bottom:6px">Cast Your Vote</h2>
   <p class="votes-remaining" id="votes-remaining">0 of 0 voted</p>
-  <div class="muted" id="vote-turn-label">Vote as the current player</div>
-  <div class="muted" id="vote-message" style="margin-top:8px; min-height:24px"></div>
-  <div class="vote-grid" id="vote-grid"></div>
+  <div class="muted" id="vote-turn-label" aria-live="polite">Vote as the current player</div>
+  <div class="muted" id="vote-message" style="margin-top:8px; min-height:24px" aria-live="polite"></div>
+  <div class="vote-grid" id="vote-grid" role="list" aria-live="polite" aria-label="Voting options"></div>
   <button class="btn btn-secondary mt8" id="revote-btn" style="display:none; max-width:260px" onclick="startRevote()" aria-label="Start a revote round">Revote</button>
   <p class="muted" style="font-size:0.75rem; margin-top:12px;">Tap a player to vote them out</p>
 </div>
@@ -991,9 +1001,24 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
   </div>
   <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:10px;">
     <textarea id="custom-wordpack-text" placeholder="Pizza - Food\nHospital - Place\nFootball - Sport" aria-label="Custom word pack"></textarea>
-    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;gap:10px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;gap:10px;flex-wrap:wrap;">
       <button class="btn btn-secondary" onclick="saveCustomWordPack()" style="padding:10px 14px;" aria-label="Save custom word pack">Save Pack</button>
       <span class="muted" id="custom-pack-count"></span>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-start;width:100%;">
+      <button class="btn btn-secondary" onclick="exportScores()" aria-label="Export scores">Export Scores</button>
+      <button class="btn btn-secondary" onclick="exportWordPack()" aria-label="Export custom word pack">Export Pack</button>
+      <button class="btn btn-secondary" onclick="triggerImport()" aria-label="Import scores or word pack">Import</button>
+    </div>
+    <input type="file" id="import-file" accept=".json,.csv" onchange="importData(event)" style="display:none" />
+  </div>
+  <div class="settings-row">
+    <div>
+      <div class="settings-label" data-i18n="notifyReminders">Turn Reminders</div>
+      <div class="settings-sub" data-i18n="notifyRemindersSub">Notify when voting begins</div>
+    </div>
+    <div class="toggle" id="toggle-notifications" onclick="toggleNotificationReminders()" onkeydown="if(event.key==='Enter'||event.key===' ') { event.preventDefault(); toggleNotificationReminders(); }" tabindex="0" aria-label="Toggle turn reminders" role="button">
+      <div class="toggle-knob"></div>
     </div>
   </div>
   <div class="settings-row">
@@ -1016,10 +1041,15 @@ button:focus-visible, input:focus-visible, .player-chip-remove:focus-visible, .s
       <option value="en">English</option>
       <option value="es">Español</option>
       <option value="el">Ελληνικά</option>
+      <option value="fr">Français</option>
+      <option value="de">Deutsch</option>
     </select>
   </div>
 </div>
 
+<script src='settings.js'></script>
+<script src='ui.js'></script>
+<script src='game-logic.js'></script>
 <script src='app.js'></script>
 </body>
 </html>

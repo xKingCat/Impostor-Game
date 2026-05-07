@@ -1,6 +1,6 @@
 {
-  "name": "Undercover Party Game",
-  "short_name": "Undercover",
+  "name": "Find The Impostor",
+  "short_name": "Impostor",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#080b14",
